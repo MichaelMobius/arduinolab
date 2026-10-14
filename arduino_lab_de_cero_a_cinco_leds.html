@@ -1,0 +1,3520 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f172a">
+  <title>Arduino Lab 2.0 · De cero a cinco LEDs</title>
+  <style>
+    :root {
+      /* Paleta Hardware Studio & Dark IDE */
+      --paper: #f0f4f8;
+      --paper-subtle: #e5ecf4;
+      --surface: #ffffff;
+      --surface-alt: #f8fafc;
+      --ink: #0f172a;
+      --ink-secondary: #334155;
+      --muted: #475569;
+      --line: #d5e0ec;
+      --line-strong: #b8c9dc;
+
+      /* Acentos Arduino & Laboratorio */
+      --teal: #007d86;
+      --teal-dark: #00585e;
+      --teal-bright: #14b8a6;
+      --teal-wash: #e0f5f6;
+      --indigo: #2563eb;
+      --indigo-wash: #eff6ff;
+      --amber: #d97706;
+      --amber-bright: #fbbf24;
+      --amber-wash: #fffbeb;
+      --emerald: #059669;
+      --emerald-wash: #ecfdf5;
+      --crimson: #dc2626;
+      --crimson-wash: #fef2f2;
+
+      /* Superficies PCB y Editor */
+      --pcb-ref-bg: linear-gradient(145deg, #0b192c 0%, #07101d 100%);
+      --pcb-user-bg: linear-gradient(145deg, #042f36 0%, #021c21 100%);
+      --ide-bg: #0d1520;
+      --ide-gutter: #091019;
+      --ide-header: #131f2e;
+      --ide-line: #1e2f42;
+
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-size: 16px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, a, textarea, input { font: inherit; }
+    button { cursor: pointer; transition: all 0.16s ease; }
+    a { color: inherit; text-decoration: none; }
+
+    :focus-visible {
+      outline: 3px solid var(--amber);
+      outline-offset: 2px;
+    }
+
+    /* Estructura Principal */
+    .layout {
+      display: grid;
+      grid-template-columns: 272px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    /* Barra Lateral */
+    .sidebar {
+      background: linear-gradient(180deg, #e7eef6 0%, #dde7f2 100%);
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 24px 18px 18px;
+      z-index: 10;
+    }
+
+    .identity {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 2px 4px 32px;
+    }
+
+    .brandmark {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
+      font-weight: 900;
+      color: #fff;
+      border-radius: 13px;
+      font-size: 24px;
+      letter-spacing: -2px;
+      padding-right: 2px;
+      box-shadow: 0 6px 16px rgba(0, 95, 102, 0.28), inset 0 1px 0 rgba(255,255,255,0.25);
+    }
+
+    .branddot { color: var(--amber-bright); }
+    .identity strong { font-size: 14px; letter-spacing: 0.9px; color: var(--ink); display: flex; align-items: center; gap: 6px; }
+    .v-badge { font-size: 10px; background: var(--teal-wash); color: var(--teal-dark); border: 1px solid #99dfe3; padding: 1px 6px; border-radius: 99px; font-weight: 800; letter-spacing: 0.3px; }
+    .identity small { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    .navigation-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 8px 10px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .navigation-head small { letter-spacing: 0; font-size: 12px; font-weight: 600; }
+
+    .lesson-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .nav-item {
+      border: 1px solid transparent;
+      text-align: left;
+      border-radius: 12px;
+      padding: 11px 10px;
+      display: flex;
+      gap: 11px;
+      align-items: center;
+      background: transparent;
+      width: 100%;
+      color: var(--ink-secondary);
+    }
+
+    .nav-number {
+      width: 30px;
+      height: 30px;
+      border: 1px solid var(--line-strong);
+      background: rgba(255, 255, 255, 0.55);
+      border-radius: 9px;
+      display: grid;
+      place-items: center;
+      flex: none;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--ink-secondary);
+      transition: all 0.16s ease;
+    }
+
+    .nav-item strong {
+      font-size: 13.5px;
+      font-weight: 750;
+      display: block;
+      color: var(--ink);
+    }
+
+    .nav-item small {
+      display: block;
+      font-size: 11.5px;
+      margin-top: 1px;
+      color: var(--muted);
+    }
+
+    .nav-item.active {
+      background: var(--surface);
+      border-color: #b7d4d8;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.07);
+    }
+
+    .nav-item.active .nav-number {
+      background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
+      color: #fff;
+      border-color: var(--teal-dark);
+      box-shadow: 0 3px 8px rgba(0, 125, 134, 0.3);
+    }
+
+    .nav-item:hover:not(.active) {
+      background: rgba(255, 255, 255, 0.6);
+      border-color: var(--line);
+    }
+
+    .nav-item.done strong::after,
+    .path-tab.done strong::after {
+      content: ' ✓';
+      color: var(--emerald);
+      font-weight: 900;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      background: linear-gradient(145deg, #d6ebee 0%, #cce3e8 100%);
+      border: 1px solid #b2d5dc;
+      border-radius: 14px;
+      padding: 15px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+    }
+
+    .mini-title {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.9px;
+      color: var(--teal-dark);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .live-indicator {
+      display: inline-block;
+      background: var(--emerald);
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.2);
+    }
+
+    .sidebar-footer p {
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: #23474d;
+      margin: 8px 0 12px;
+    }
+
+    .pdf-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .pdf-link {
+      font-size: 12.5px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 10px;
+      border: 1px solid #86bcc4;
+      border-radius: 9px;
+      text-align: center;
+      background: #f5fcfd;
+      color: var(--teal-dark);
+      box-shadow: 0 2px 5px rgba(0, 88, 94, 0.08);
+    }
+
+    .pdf-link:hover {
+      background: #ffffff;
+      border-color: var(--teal);
+      transform: translateY(-1px);
+    }
+
+    /* Cabecera Superior */
+    .main { min-width: 0; }
+
+    .topbar {
+      height: 64px;
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 36px;
+      position: sticky;
+      top: 0;
+      z-index: 9;
+    }
+
+    .breadcrumb {
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: 1.1px;
+      color: var(--muted);
+    }
+
+    .breadcrumb span { color: #94a3b8; margin: 0 8px; }
+    .breadcrumb span:last-child { color: var(--teal-dark); }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .offline-pill {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-secondary);
+      background: var(--emerald-wash);
+      border: 1px solid #a7f3d0;
+      padding: 5px 11px;
+      border-radius: 99px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .offline-pill i {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      background: var(--emerald);
+      border-radius: 100%;
+    }
+
+    .outline-link {
+      font-size: 13px;
+      font-weight: 750;
+      border: 1px solid var(--line-strong);
+      background: var(--surface);
+      color: var(--ink);
+      padding: 8px 13px;
+      border-radius: 9px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .outline-link:hover {
+      background: var(--surface-alt);
+      border-color: var(--teal);
+      color: var(--teal-dark);
+    }
+
+    /* Contenido Principal */
+    .content {
+      max-width: 1420px;
+      margin: 0 auto;
+      padding: 32px 36px 28px;
+    }
+
+    .eyebrow {
+      font-size: 11.5px;
+      letter-spacing: 1.4px;
+      color: var(--teal);
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .intro { margin-bottom: 24px; }
+
+    .intro-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .intro h1 {
+      font-size: clamp(28px, 3.3vw, 40px);
+      line-height: 1.1;
+      letter-spacing: -1.2px;
+      margin: 8px 0 6px;
+      font-weight: 850;
+      color: var(--ink);
+    }
+
+    .intro-desc {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .chips {
+      margin-top: 14px;
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      background: #dff1f3;
+      border: 1px solid #b5dfe3;
+      padding: 5px 10px;
+      border-radius: 7px;
+      color: var(--teal-dark);
+      font-size: 12px;
+      font-weight: 750;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+
+    .chip.chip-new {
+      background: var(--indigo-wash);
+      border-color: #bfdbfe;
+      color: #1d4ed8;
+    }
+
+    .wiring {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+      padding: 11px 14px;
+      border: 1px solid #c2dce0;
+      background: linear-gradient(90deg, #e6f4f6 0%, #f0f7fa 100%);
+      border-radius: 10px;
+      font-size: 13.5px;
+      color: #1e4248;
+    }
+
+    .wiring strong {
+      font-size: 11px;
+      letter-spacing: 0.7px;
+      background: var(--teal-dark);
+      color: #fff;
+      padding: 3px 8px;
+      border-radius: 5px;
+      font-weight: 800;
+    }
+
+    /* Pestañas A / B / C */
+    .path {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 26px;
+    }
+
+    .path-tab {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      min-width: 0;
+      padding: 13px 14px;
+      display: flex;
+      text-align: left;
+      align-items: center;
+      gap: 12px;
+      border-radius: 12px;
+      color: var(--muted);
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+    }
+
+    .path-tab:hover:not(.active) {
+      border-color: var(--line-strong);
+      background: var(--surface-alt);
+    }
+
+    .path-tab.active {
+      background: linear-gradient(135deg, #e0f5f6 0%, #eff9fa 100%);
+      border-color: var(--teal);
+      box-shadow: inset 0 0 0 1px var(--teal), 0 6px 16px rgba(0, 125, 134, 0.1);
+    }
+
+    .step-number {
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--line-strong);
+      background: var(--surface-alt);
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      font-weight: 850;
+      flex: none;
+      color: var(--ink-secondary);
+    }
+
+    .path-tab.active .step-number {
+      background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
+      color: white;
+      border-color: var(--teal-dark);
+    }
+
+    .path-tab strong { display: block; font-size: 14px; color: var(--ink); }
+    .path-tab small { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    /* Área de Trabajo */
+    .work-area {
+      display: grid;
+      grid-template-columns: minmax(320px, 0.94fr) minmax(410px, 1.06fr);
+      gap: 28px;
+      align-items: start;
+    }
+
+    .workspace-left, .workspace-right { min-width: 0; }
+
+    .section-head, .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .pill {
+      background: var(--teal-wash);
+      border: 1px solid #a5dfe3;
+      border-radius: 6px;
+      padding: 5px 9px;
+      color: var(--teal-dark);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    h2 {
+      font-size: 21px;
+      margin: 8px 0 8px;
+      letter-spacing: -0.4px;
+      color: var(--ink);
+    }
+
+    .stage-instruction {
+      font-size: 14.5px;
+      line-height: 1.6;
+      min-height: 48px;
+      color: var(--ink-secondary);
+      margin: 0 0 14px;
+    }
+
+    /* Placas de Circuito (PCB Realista) */
+    .board-wrap {
+      border-radius: 15px;
+      background: var(--pcb-ref-bg);
+      background-image:
+        radial-gradient(rgba(56, 189, 248, 0.08) 1px, transparent 1px),
+        linear-gradient(145deg, #0b192c 0%, #07101d 100%);
+      background-size: 16px 16px, 100% 100%;
+      overflow: hidden;
+      margin-bottom: 13px;
+      color: #e2e8f0;
+      border: 1px solid #1e3a5f;
+      box-shadow: 0 12px 28px rgba(7, 16, 29, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      position: relative;
+    }
+
+    .board-wrap.personal {
+      background: var(--pcb-user-bg);
+      background-image:
+        radial-gradient(rgba(45, 212, 191, 0.09) 1px, transparent 1px),
+        linear-gradient(145deg, #052e34 0%, #02191d 100%);
+      background-size: 16px 16px, 100% 100%;
+      border-color: #115e59;
+    }
+
+    /* Agujeros de montaje PCB decorativos */
+    .board-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: flex-start;
+      padding: 15px 18px 0;
+    }
+
+    .board-top small {
+      display: block;
+      color: #94a3b8;
+      font-size: 12px;
+      margin-top: 3px;
+    }
+
+    .sim-label {
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: 1.1px;
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .live-dot {
+      color: #38bdf8;
+      font-size: 11px;
+      letter-spacing: 0.7px;
+      font-weight: 800;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .sim-badge {
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: rgba(15, 23, 42, 0.45);
+      font-size: 11px;
+      font-weight: 800;
+      color: #cbd5e1;
+      border-radius: 6px;
+      padding: 4px 9px;
+      letter-spacing: 0.5px;
+    }
+
+    .sim-badge.running {
+      color: #5eead4;
+      border-color: rgba(45, 212, 191, 0.45);
+      background: rgba(13, 148, 136, 0.22);
+    }
+
+    .sim-badge.error {
+      color: #fca5a5;
+      border-color: rgba(248, 113, 113, 0.5);
+      background: rgba(185, 28, 28, 0.28);
+    }
+
+    .board {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: clamp(10px, 2vw, 22px);
+      padding: 20px 14px 16px;
+      min-height: 122px;
+    }
+
+    .led-assembly {
+      text-align: center;
+      min-width: 54px;
+      position: relative;
+    }
+
+    .led {
+      position: relative;
+      display: block;
+      width: clamp(40px, 4.4vw, 54px);
+      height: clamp(40px, 4.4vw, 54px);
+      background: radial-gradient(circle at 38% 35%, #475569, #1e293b 70%, #0f172a 100%);
+      border-radius: 50%;
+      border: 3px solid #64748b;
+      box-shadow: inset 0 0 12px #090d16, 0 6px 10px rgba(0, 0, 0, 0.45);
+      margin: 0 auto;
+      transition: background 0.1s ease, border-color 0.1s ease, box-shadow 0.1s ease, transform 0.1s ease;
+    }
+
+    .led::after {
+      content: '';
+      position: absolute;
+      width: 11px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.28);
+      left: 8px;
+      top: 7px;
+      transform: rotate(-32deg);
+    }
+
+    .led.lit {
+      background: radial-gradient(circle at 38% 35%, #ffffff 0%, #fef08a 28%, #fbbf24 62%, #d97706 95%);
+      border-color: #fde68a;
+      box-shadow:
+        0 0 18px rgba(251, 191, 36, 0.85),
+        0 0 38px rgba(245, 158, 11, 0.55),
+        inset 0 0 8px #ffffff;
+      transform: scale(1.04);
+    }
+
+    .led.lit::after { background: #ffffff; }
+
+    .led-pin {
+      display: inline-block;
+      color: #fbbf24;
+      background: rgba(251, 191, 36, 0.12);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 11px;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+
+    .led-number {
+      display: block;
+      font-size: 12px;
+      color: #cbd5e1;
+      margin-top: 3px;
+      font-weight: 750;
+    }
+
+    /* Separador y Pulsador Físico en la Placa (SW1 D2) */
+    .pcb-divider {
+      width: 1px;
+      height: 68px;
+      background: linear-gradient(180deg, transparent, rgba(148, 163, 184, 0.35), transparent);
+      margin: 0 2px;
+    }
+
+    .pcb-switch-unit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      border-radius: 12px;
+      padding: 8px 11px 7px;
+      min-width: 108px;
+      user-select: none;
+      -webkit-user-select: none;
+      position: relative;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+
+    .pcb-switch-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      gap: 6px;
+      margin-bottom: 5px;
+    }
+
+    .pcb-switch-tag {
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 10px;
+      font-weight: 800;
+      color: #93c5fd;
+      letter-spacing: 0.4px;
+    }
+
+    .pcb-lock-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      color: #cbd5e1;
+      font-size: 10px;
+      font-weight: 750;
+      padding: 1px 5px;
+      border-radius: 4px;
+      line-height: 1.3;
+    }
+
+    .pcb-lock-btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+      color: #fff;
+    }
+
+    .pcb-lock-btn.locked {
+      background: rgba(245, 158, 11, 0.28);
+      border-color: #fbbf24;
+      color: #fde68a;
+    }
+
+    /* Cuerpo del pulsador táctil 6x6mm estilo electrónico */
+    .tactile-btn {
+      position: relative;
+      width: 52px;
+      height: 52px;
+      border-radius: 11px;
+      background: linear-gradient(145deg, #cbd5e1 0%, #64748b 100%);
+      border: 2px solid #475569;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.6);
+      touch-action: none;
+      cursor: pointer;
+    }
+
+    /* Pines metálicos laterales del pulsador */
+    .tactile-btn::before,
+    .tactile-btn::after {
+      content: '';
+      position: absolute;
+      width: 60px;
+      height: 6px;
+      background: linear-gradient(90deg, #f59e0b, #fde68a, #f59e0b);
+      border-radius: 2px;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .tactile-btn::before { top: 10px; }
+    .tactile-btn::after { bottom: 10px; }
+
+    /* Capuchón circular del botón físico */
+    .tactile-cap {
+      position: relative;
+      z-index: 1;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #ef4444 0%, #b91c1c 68%, #7f1d1d 100%);
+      border: 2px solid #fca5a5;
+      box-shadow: 0 4px 0 #450a0a, 0 6px 8px rgba(0,0,0,0.55), inset 0 2px 3px rgba(255,255,255,0.45);
+      transition: transform 0.06s ease, box-shadow 0.06s ease, background 0.1s ease;
+      display: grid;
+      place-items: center;
+      color: rgba(255,255,255,0.9);
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .tactile-btn:hover .tactile-cap {
+      border-color: #ffffff;
+    }
+
+    .tactile-btn.pressed .tactile-cap {
+      transform: translateY(3px) scale(0.96);
+      background: radial-gradient(circle at 40% 40%, #34d399 0%, #059669 70%, #064e3b 100%);
+      border-color: #a7f3d0;
+      box-shadow: 0 1px 0 #064e3b, 0 0 14px rgba(52, 211, 153, 0.75), inset 0 2px 4px rgba(0,0,0,0.35);
+    }
+
+    .pcb-switch-state {
+      margin-top: 6px;
+      font-size: 11px;
+      font-weight: 750;
+      color: #cbd5e1;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+
+    .pcb-switch-state.low {
+      color: #6ee7b7;
+    }
+
+    .board-foot {
+      border-top: 1px solid rgba(148, 163, 184, 0.18);
+      margin: 0 16px;
+      padding: 10px 2px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Veredicto de comparación */
+    .verdict {
+      margin: 0 0 14px;
+      padding: 12px 15px;
+      border-radius: 10px;
+      font-size: 14px;
+      border: 1px solid var(--line-strong);
+      background: var(--surface);
+      color: var(--ink-secondary);
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+    }
+
+    .verdict.ok {
+      background: var(--emerald-wash);
+      border-color: #6ee7b7;
+      color: #065f46;
+      font-weight: 750;
+    }
+
+    .verdict.diff {
+      background: var(--amber-wash);
+      border-color: #fcd34d;
+      color: #92400e;
+      font-weight: 600;
+    }
+
+    /* Panel de Controles del Botón */
+    .button-controls {
+      border: 1px solid #bdd6dc;
+      background: linear-gradient(180deg, #ffffff 0%, #f5fafb 100%);
+      border-radius: 12px;
+      padding: 13px 15px;
+      margin: 12px 0;
+      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
+    }
+
+    .button-controls[hidden] { display: none; }
+
+    .button-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .button-info strong { font-size: 14px; color: var(--ink); }
+    .button-info span { font-size: 12px; color: var(--teal-dark); font-weight: 600; }
+
+    .button-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .press-btn {
+      border: 1px solid var(--teal-dark);
+      background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
+      color: #fff;
+      font-size: 13.5px;
+      font-weight: 750;
+      padding: 9px 14px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 125, 134, 0.25);
+    }
+
+    .press-btn:hover { filter: brightness(1.08); }
+
+    .hold-btn {
+      background: var(--surface);
+      border: 1px solid var(--line-strong);
+      color: var(--ink-secondary);
+      font-size: 13.5px;
+      font-weight: 700;
+      border-radius: 8px;
+      padding: 9px 13px;
+    }
+
+    .hold-btn:hover { border-color: var(--teal); color: var(--teal-dark); }
+
+    .hold-btn.holding {
+      background: #fef3c7;
+      border-color: var(--amber);
+      color: #92400e;
+      box-shadow: inset 0 0 0 1px var(--amber);
+    }
+
+    .button-state {
+      color: var(--muted);
+      font-size: 12.5px;
+      margin-top: 9px;
+      font-weight: 600;
+    }
+
+    /* Caja de Pista */
+    .tipbox {
+      display: flex;
+      gap: 12px;
+      background: linear-gradient(90deg, #fffbeb 0%, #fef3c7 100%);
+      border: 1px solid #fde68a;
+      border-left: 4px solid var(--amber);
+      border-radius: 10px;
+      padding: 13px 15px;
+      margin-top: 14px;
+    }
+
+    .tipbox span {
+      color: #b45309;
+      font-size: 11.5px;
+      letter-spacing: 0.6px;
+      white-space: nowrap;
+      font-weight: 900;
+      padding-top: 2px;
+    }
+
+    .tipbox p {
+      margin: 0;
+      font-size: 13.5px;
+      color: #78350f;
+      line-height: 1.55;
+    }
+
+    /* Editor de Código con Resaltado de Sintaxis */
+    .code-header { margin-bottom: 12px; }
+    .code-header h2 { margin: 4px 0 0; font-size: 20px; }
+
+    .code-header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .snippet-btn {
+      font-size: 12px;
+      font-weight: 750;
+      background: var(--indigo-wash);
+      color: var(--indigo);
+      border: 1px solid #bfdbfe;
+      border-radius: 7px;
+      padding: 6px 10px;
+    }
+
+    .snippet-btn:hover {
+      background: #dbeafe;
+      border-color: #93c5fd;
+    }
+
+    .file-tag {
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid var(--line-strong);
+      background: var(--surface);
+      border-radius: 7px;
+      padding: 6px 10px;
+      color: var(--teal-dark);
+    }
+
+    .editor-shell {
+      background: var(--ide-bg);
+      border-radius: 13px;
+      overflow: hidden;
+      border: 1px solid var(--ide-line);
+      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.18);
+    }
+
+    .editor-shell:focus-within {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25), 0 14px 30px rgba(15, 23, 42, 0.18);
+    }
+
+    .editor-topline {
+      height: 40px;
+      background: var(--ide-header);
+      border-bottom: 1px solid var(--ide-line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .editor-dots { display: flex; gap: 6px; align-items: center; }
+    .editor-dots i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+    .editor-dots i:first-child { background: #f87171; }
+    .editor-dots i:nth-child(2) { background: #fbbf24; }
+    .editor-dots i:nth-child(3) { background: #34d399; }
+
+    .editor-body {
+      display: flex;
+      height: min(46vh, 430px);
+      min-height: 320px;
+      overflow: hidden;
+      position: relative;
+      background: var(--ide-bg);
+    }
+
+    .line-numbers {
+      font-size: 14px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      color: #475569;
+      background: var(--ide-gutter);
+      border-right: 1px solid #162332;
+      text-align: right;
+      line-height: 22px;
+      min-width: 50px;
+      padding: 15px 10px 24px 0;
+      user-select: none;
+      overflow: hidden;
+      white-space: pre;
+      flex-shrink: 0;
+    }
+
+    .line-numbers span {
+      display: block;
+      padding-right: 2px;
+    }
+
+    .line-numbers .err {
+      background: #991b1b;
+      color: #fecaca;
+      font-weight: 800;
+      border-left: 3px solid #f87171;
+    }
+
+    /* Superposición exacta de resaltado + textarea */
+    .editor-stage {
+      position: relative;
+      flex: 1;
+      min-width: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .editor-stage pre,
+    .editor-stage textarea {
+      position: absolute;
+      inset: 0;
+      margin: 0;
+      padding: 15px 16px 24px 14px;
+      border: 0;
+      outline: none;
+      width: 100%;
+      height: 100%;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 14px;
+      line-height: 22px;
+      tab-size: 2;
+      white-space: pre;
+      overflow: auto;
+      box-sizing: border-box;
+      letter-spacing: 0;
+      font-variant-ligatures: none;
+    }
+
+    .editor-stage pre {
+      pointer-events: none;
+      z-index: 1;
+      color: #e2e8f0;
+      background: transparent;
+    }
+
+    .editor-stage pre code {
+      font: inherit;
+      color: inherit;
+    }
+
+    .editor-stage textarea {
+      z-index: 2;
+      color: transparent;
+      background: transparent;
+      caret-color: #38bdf8;
+      resize: none;
+    }
+
+    .editor-stage textarea::selection {
+      background: rgba(56, 189, 248, 0.28);
+      color: transparent;
+    }
+
+    /* Colores de tokens C++ / Arduino */
+    .tok-comment { color: #64748b; font-style: italic; }
+    .tok-kw { color: #c084fc; font-weight: 700; }
+    .tok-type { color: #38bdf8; font-weight: 700; }
+    .tok-const { color: #fbbf24; font-weight: 700; }
+    .tok-fn { color: #34d399; }
+    .tok-serial { color: #67e8f9; font-weight: 600; }
+    .tok-num { color: #fb923c; }
+    .tok-str { color: #a3e635; }
+    .tok-op { color: #f472b6; }
+    .tok-blank {
+      background: rgba(251, 191, 36, 0.22);
+      color: #fde68a;
+      border-bottom: 2px dashed #fbbf24;
+      border-radius: 3px;
+    }
+
+    /* Botones de Acción del Editor */
+    .editor-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 12px 0;
+    }
+
+    .primary-btn, .secondary-btn {
+      border-radius: 9px;
+      padding: 10px 14px;
+      font-size: 13.5px;
+      font-weight: 800;
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
+      border: 1px solid var(--teal-dark);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(0, 125, 134, 0.25);
+    }
+
+    .primary-btn:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+    }
+
+    .secondary-btn {
+      background: var(--surface);
+      border: 1px solid var(--line-strong);
+      color: var(--ink-secondary);
+    }
+
+    .secondary-btn:hover:not(:disabled) {
+      border-color: var(--teal);
+      color: var(--teal-dark);
+      background: var(--surface-alt);
+    }
+
+    .secondary-btn:disabled { opacity: 0.5; cursor: default; }
+    .icon-btn { width: 40px; font-size: 16px; padding: 7px; display: inline-grid; place-items: center; }
+
+    /* Consola de Diagnóstico + Monitor Serie */
+    .diagnostics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .console, .serial-monitor {
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      overflow: hidden;
+      background: var(--surface);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .serial-monitor {
+      background: #0b131e;
+      border-color: #1e2f42;
+      color: #cbd5e1;
+    }
+
+    .console-title {
+      border-bottom: 1px solid var(--line);
+      padding: 8px 13px;
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: 0.8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--muted);
+      background: var(--surface-alt);
+    }
+
+    .serial-monitor .console-title {
+      background: #131f2e;
+      border-bottom-color: #1e2f42;
+      color: #94a3b8;
+    }
+
+    .serial-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .baud-tag {
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 10.5px;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .clear-serial-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      color: #cbd5e1;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    .clear-serial-btn:hover { background: rgba(255, 255, 255, 0.16); color: #fff; }
+
+    .console-light { color: var(--emerald); }
+
+    .console-message {
+      min-height: 76px;
+      padding: 11px 13px;
+      color: var(--ink-secondary);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .console-message.ok { color: #047857; background: #f0fdf4; font-weight: 600; }
+    .console-message.error { color: #b91c1c; background: #fef2f2; font-weight: 600; }
+
+    .serial-output {
+      min-height: 76px;
+      max-height: 130px;
+      padding: 10px 12px;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: #a7f3d0;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .serial-placeholder {
+      color: #64748b;
+      font-style: italic;
+    }
+
+    /* Pregunta para la ficha */
+    .response {
+      margin-top: 16px;
+      background: linear-gradient(90deg, #eff6ff 0%, #f8fafc 100%);
+      border: 1px solid #bfdbfe;
+      border-radius: 11px;
+      padding: 14px 16px;
+      display: flex;
+      gap: 13px;
+      align-items: flex-start;
+    }
+
+    .response-mark {
+      height: 30px;
+      width: 30px;
+      flex: none;
+      background: var(--indigo);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .response strong { font-size: 14px; color: #1e3a8a; }
+    .response p { font-size: 13.5px; line-height: 1.5; color: #334155; margin: 4px 0 0; }
+
+    /* Navegación Inferior */
+    .bottom-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .text-btn {
+      background: var(--surface);
+      border: 1px solid var(--line-strong);
+      padding: 10px 14px;
+      border-radius: 9px;
+      font-size: 13.5px;
+      font-weight: 750;
+      color: var(--ink-secondary);
+    }
+
+    .text-btn:hover:not(:disabled) { border-color: var(--teal); color: var(--teal-dark); }
+
+    .next-btn {
+      background: var(--teal-wash);
+      color: var(--teal-dark);
+      border: 1px solid #86cfd5;
+      padding: 10px 16px;
+      border-radius: 9px;
+      font-size: 13.5px;
+      font-weight: 800;
+    }
+
+    .next-btn:hover:not(:disabled) {
+      background: var(--teal);
+      color: #fff;
+      border-color: var(--teal-dark);
+    }
+
+    .nav-item:disabled, .next-btn:disabled, .text-btn:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+
+    .progress-dots { display: flex; gap: 6px; }
+    .progress-dot { width: 8px; height: 8px; border-radius: 50%; background: #cbd5e1; }
+    .progress-dot.current { background: var(--teal); width: 20px; border-radius: 99px; }
+
+    .page-footer {
+      text-align: center;
+      border-top: 1px solid var(--line);
+      padding: 22px 0 0;
+      margin-top: 32px;
+      font-size: 11.5px;
+      font-weight: 800;
+      color: var(--muted);
+      letter-spacing: 0.8px;
+    }
+
+    /* Modal de Guía Rápida / Fichas A4 Imprimibles */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      z-index: 100;
+    }
+
+    .modal-backdrop[hidden] { display: none; }
+
+    .modal-card {
+      background: var(--surface);
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      max-width: 720px;
+      width: 100%;
+      max-height: 88vh;
+      overflow-y: auto;
+      padding: 24px 26px;
+      box-shadow: 0 24px 48px rgba(15, 23, 42, 0.35);
+    }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+    }
+
+    .modal-head h3 { margin: 0; font-size: 20px; color: var(--ink); }
+
+    .snippet-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .snippet-item {
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 14px;
+      background: var(--surface-alt);
+    }
+
+    .snippet-item-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .snippet-item pre {
+      margin: 0;
+      padding: 11px 13px;
+      background: var(--ide-bg);
+      color: #e2e8f0;
+      border-radius: 8px;
+      font-size: 12.5px;
+      line-height: 1.5;
+      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+
+    /* Vista de Impresión para Fichas A4 */
+    #printableWorksheets { display: none; }
+
+    @media print {
+      .layout, .modal-backdrop { display: none !important; }
+      body { background: #fff; color: #000; font-size: 11pt; }
+      #printableWorksheets {
+        display: block !important;
+        padding: 0;
+      }
+      .print-sheet {
+        page-break-after: always;
+        padding: 12mm 14mm;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        margin-bottom: 10mm;
+      }
+      .print-sheet:last-child { page-break-after: auto; }
+      .print-sheet h2 { margin: 0 0 4px; font-size: 16pt; color: #00585e; }
+      .print-sheet pre {
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        padding: 8px 10px;
+        border-radius: 6px;
+        font-size: 9.5pt;
+        white-space: pre-wrap;
+      }
+      .print-lines {
+        border-bottom: 1px dashed #94a3b8;
+        height: 22px;
+        margin-top: 4px;
+      }
+    }
+
+    /* Responsividad */
+    @media (max-width: 1120px) {
+      .layout { grid-template-columns: 220px 1fr; }
+      .content { padding: 24px 20px; }
+      .work-area { gap: 20px; }
+      .topbar { padding: 0 20px; }
+      .diagnostics-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 880px) {
+      .work-area { grid-template-columns: 1fr; }
+      .editor-body { height: 370px; }
+      .stage-instruction { min-height: 0; }
+      .top-actions .offline-pill { display: none; }
+    }
+
+    @media (max-width: 640px) {
+      .layout { display: block; }
+      .sidebar { position: static; height: auto; padding: 12px; display: block; }
+      .identity { margin: 0 0 10px; }
+      .navigation-head, .sidebar-footer { display: none; }
+      .lesson-nav { display: flex; flex-direction: row; overflow-x: auto; gap: 6px; padding-bottom: 4px; }
+      .nav-item { flex: 0 0 auto; width: 48px; padding: 6px; justify-content: center; }
+      .nav-item span:last-child { display: none; }
+      .topbar { height: 50px; padding: 0 14px; }
+      .content { padding: 18px 14px; }
+      .path { gap: 6px; }
+      .path-tab { padding: 9px; flex-direction: column; align-items: flex-start; }
+      .bottom-nav { flex-wrap: wrap; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" aria-label="Niveles del curso">
+    <div class="identity">
+      <span class="brandmark">A<span class="branddot">·</span></span>
+      <div>
+        <strong>ARDUINO LAB <span class="v-badge">2.0</span></strong>
+        <small>Aprender haciendo</small>
+      </div>
+    </div>
+    <div class="navigation-head"><span>RUTA DE APRENDIZAJE</span><small>6 niveles</small></div>
+    <nav id="lessonNav" class="lesson-nav"></nav>
+    <div class="sidebar-footer">
+      <div class="mini-title"><span class="live-indicator"></span> PULSADOR EN PLACA + SERIAL</div>
+      <p>Pulsa directamente el botón físico <strong>SW1 (D2)</strong> en el circuito, usa <code>while</code>, <code>+=</code> y <code>Serial.println()</code>.</p>
+      <div class="pdf-actions">
+        <button type="button" id="printSheetsBtn" class="pdf-link"><span>🖨</span> Imprimir Fichas A4</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="breadcrumb">RUTA DE INICIACIÓN <span> / </span> <span id="crumb">NIVEL 01</span></div>
+      <div class="top-actions">
+        <span class="offline-pill"><i></i> Simulador C++ en vivo</span>
+        <button type="button" id="openNewFeaturesBtn" class="outline-link">✦ Ejemplos: while · Serial · +=</button>
+        <button type="button" id="topPrintBtn" class="outline-link">🖨 Fichas A4</button>
+      </div>
+    </header>
+
+    <div class="content">
+      <section class="intro">
+        <div class="eyebrow" id="levelLabel">NIVEL 01 / 06</div>
+        <div class="intro-header-row">
+          <div>
+            <h1 id="lessonTitle">Mi primer LED</h1>
+            <p class="intro-desc" id="lessonSubtitle">Salidas digitales y tiempos</p>
+          </div>
+        </div>
+        <div id="conceptChips" class="chips"></div>
+        <div class="wiring">
+          <strong>CONEXIONES DEL CIRCUITO</strong>
+          <span id="wiringText"></span>
+        </div>
+      </section>
+
+      <section class="path" aria-label="Ejercicios">
+        <button class="path-tab active" data-stage="a">
+          <span class="step-number">A</span>
+          <span><strong>Observa y aprende</strong><small>Código completo</small></span>
+        </button>
+        <button class="path-tab" data-stage="b">
+          <span class="step-number">B</span>
+          <span><strong>Completa</strong><small>Código con huecos</small></span>
+        </button>
+        <button class="path-tab" data-stage="c">
+          <span class="step-number">C</span>
+          <span><strong>Crea</strong><small>Reto autónomo</small></span>
+        </button>
+      </section>
+
+      <div class="work-area">
+        <!-- Columna Izquierda: Circuitos -->
+        <section class="workspace-left">
+          <div class="section-head">
+            <span class="eyebrow">01 / REFERENCIA VISUAL</span>
+            <span class="pill" id="stagePill">EJEMPLO COMPLETO</span>
+          </div>
+          <h2 id="stageTitle">Enciende un LED</h2>
+          <p id="stageInstruction" class="stage-instruction"></p>
+
+          <!-- Placa de Referencia -->
+          <div class="board-wrap">
+            <div class="board-top">
+              <div>
+                <span class="sim-label">COMPORTAMIENTO ESPERADO</span>
+                <small>Qué debe hacer tu circuito (puedes pulsar SW1 aquí)</small>
+              </div>
+              <span class="live-dot">● REFERENCIA</span>
+            </div>
+            <div id="expectedBoard" class="board" aria-label="Comportamiento esperado"></div>
+            <div class="board-foot">
+              <span id="expectedState">LED 1 encendido</span>
+              <span id="refTime">00:00</span>
+            </div>
+          </div>
+
+          <!-- Placa del Estudiante -->
+          <div class="board-wrap personal">
+            <div class="board-top">
+              <div>
+                <span class="sim-label">TU CIRCUITO VIRTUAL</span>
+                <small>Haz clic directo en el botón físico SW1 o usa los controles</small>
+              </div>
+              <span id="simBadge" class="sim-badge">SIN EJECUTAR</span>
+            </div>
+            <div id="userBoard" class="board" aria-label="Resultado de tu programa"></div>
+            <div class="board-foot">
+              <span id="userState">Sin ejecutar</span>
+              <span id="simTime">00:00</span>
+            </div>
+          </div>
+
+          <p id="verdict" class="verdict" role="status" aria-live="polite">Ejecuta tu código para compararlo con la referencia.</p>
+
+          <!-- Controles sincronizados con el botón físico -->
+          <div id="buttonControls" class="button-controls" hidden>
+            <div class="button-info">
+              <strong>Pulsador físico SW1 (Pin D2 ↔ GND)</strong>
+              <span>También puedes pulsar directamente el botón rojo en el circuito</span>
+            </div>
+            <div class="button-actions">
+              <button id="pulseBtn" class="press-btn">⏻ Pulsar y soltar</button>
+              <button id="holdBtn" class="hold-btn">Mantener presionado</button>
+            </div>
+            <div id="buttonState" class="button-state">Estado en Pin D2: suelto (HIGH · 5V)</div>
+          </div>
+
+          <div class="tipbox">
+            <span>✦ PISTA</span>
+            <p id="tipText"></p>
+          </div>
+        </section>
+
+        <!-- Columna Derecha: Editor con Resaltado + Monitor Serie -->
+        <section class="workspace-right">
+          <div class="code-header">
+            <div>
+              <span class="eyebrow">02 / TU CÓDIGO</span>
+              <h2>Editor Arduino con Sintaxis C++</h2>
+            </div>
+            <div class="code-header-right">
+              <button type="button" id="insertSerialBtn" class="snippet-btn" title="Ver o probar ejemplos de while, Serial y +=">+ Probar while / Serial / +=</button>
+              <span class="file-tag">sketch.ino</span>
+            </div>
+          </div>
+
+          <div class="editor-shell">
+            <div class="editor-topline">
+              <div class="editor-dots"><i></i><i></i><i></i></div>
+              <span>ARDUINO C++ · SINTAXIS RESALTADA (if · for · while · Serial · +=)</span>
+              <span id="lineCount">00 LÍNEAS</span>
+            </div>
+            <div class="editor-body">
+              <div id="lineNumbers" class="line-numbers" aria-hidden="true"></div>
+              <div class="editor-stage">
+                <pre id="codeHighlight" aria-hidden="true"><code id="codeHighlightContent"></code></pre>
+                <textarea id="codeEditor" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Editor de código Arduino"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="editor-actions">
+            <button id="runBtn" class="primary-btn" title="Ctrl + Enter">▶ Ejecutar código</button>
+            <button id="stopBtn" class="secondary-btn">⏸ Pausar</button>
+            <button id="resetBtn" class="secondary-btn">↺ Restaurar</button>
+            <button id="copyBtn" class="secondary-btn icon-btn" title="Copiar código" aria-label="Copiar código">⧉</button>
+            <button id="downloadBtn" class="secondary-btn icon-btn" title="Descargar sketch .ino" aria-label="Descargar sketch .ino">↓</button>
+          </div>
+
+          <!-- Panel Dual: Consola + Monitor Serie -->
+          <div class="diagnostics-grid">
+            <div class="console">
+              <div class="console-title">
+                <span>CONSOLA DE ESTADO</span>
+                <span class="console-light">●</span>
+              </div>
+              <div id="consoleOutput" class="console-message" role="status" aria-live="polite">
+                Pulsa «Ejecutar código» para iniciar tu simulación.
+              </div>
+            </div>
+
+            <div class="serial-monitor">
+              <div class="console-title">
+                <span>MONITOR SERIE</span>
+                <div class="serial-controls">
+                  <span id="serialBaudTag" class="baud-tag">9600 baud</span>
+                  <button type="button" id="clearSerialBtn" class="clear-serial-btn">Limpiar</button>
+                </div>
+              </div>
+              <div id="serialOutput" class="serial-output" aria-live="polite"><span class="serial-placeholder">Usa Serial.begin(9600); y Serial.println("Hola"); para ver datos aquí.</span></div>
+            </div>
+          </div>
+
+          <div class="response">
+            <div class="response-mark">?</div>
+            <div>
+              <strong>Para pensar y escribir en tu ficha</strong>
+              <p id="questionText"></p>
+            </div>
+          </div>
+
+          <div class="bottom-nav">
+            <button id="prevBtn" class="text-btn">← Anterior</button>
+            <div class="progress-dots" id="progressDots"></div>
+            <button id="nextBtn" class="next-btn">Siguiente ejercicio →</button>
+          </div>
+        </section>
+      </div>
+
+      <footer class="page-footer">
+        LABORATORIO DE CÓDIGO CREATIVO 2.0 <span> · </span> SOPORTA RESALTADO C++, BUCLES WHILE, MONITOR SERIE, OPERADORES += Y PULSACIÓN DIRECTA EN CIRCUITO.
+      </footer>
+    </div>
+  </main>
+</div>
+
+<!-- Modal de Ejemplos Rápidos: while, Serial y += -->
+<div id="featuresModal" class="modal-backdrop" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-head">
+      <h3 id="modalTitle">Nuevas funciones del intérprete 2.0</h3>
+      <button type="button" id="closeModalBtn" class="secondary-btn">✕ Cerrar</button>
+    </div>
+    <p style="margin:0 0 14px;color:var(--ink-secondary);font-size:14px;">
+      Puedes escribir cualquiera de estas construcciones en el editor o cargar un ejemplo interactivo en el nivel actual:
+    </p>
+    <div class="snippet-grid">
+      <div class="snippet-item">
+        <div class="snippet-item-head">
+          <strong>1. Bucle <code>while</code> + barrido con <code>+=</code> y <code>Serial.println()</code></strong>
+          <button type="button" class="primary-btn load-snippet-btn" data-snippet="whileSweep" style="padding:6px 11px;font-size:12px;">Cargar en el editor</button>
+        </div>
+        <pre>void setup() {
+  Serial.begin(9600);
+  int p = 8;
+  while (p &lt;= 12) {
+    pinMode(p, OUTPUT);
+    p += 1;
+  }
+}
+
+void loop() {
+  int pin = 8;
+  while (pin &lt;= 12) {
+    Serial.print("Encendiendo pin D");
+    Serial.println(pin);
+    digitalWrite(pin, HIGH);
+    delay(250);
+    digitalWrite(pin, LOW);
+    pin += 1;
+  }
+}</pre>
+      </div>
+
+      <div class="snippet-item">
+        <div class="snippet-item-head">
+          <strong>2. Espera activa con <code>while (digitalRead(boton) == HIGH)</code></strong>
+          <button type="button" class="primary-btn load-snippet-btn" data-snippet="whileWait" style="padding:6px 11px;font-size:12px;">Cargar en el editor</button>
+        </div>
+        <pre>const int led = 8;
+const int boton = 2;
+int contador = 0;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(led, OUTPUT);
+  pinMode(boton, INPUT_PULLUP);
+  Serial.println("Sistema listo. Pulsa el boton fisico SW1...");
+}
+
+void loop() {
+  // Espera mientras el boton este suelto (HIGH)
+  while (digitalRead(boton) == HIGH) {
+    digitalWrite(led, LOW);
+  }
+  contador += 1;
+  Serial.print("Pulsacion detectada #");
+  Serial.println(contador);
+  digitalWrite(led, HIGH);
+  delay(300);
+}</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Contenedor de Fichas A4 para Impresión Directa -->
+<div id="printableWorksheets" aria-hidden="true"></div>
+
+<script>
+const LESSONS = [
+  {
+    id: 1, title: 'Mi primer LED', subtitle: 'Salidas digitales y tiempos', concept: 'setup · loop · OUTPUT · digitalWrite · delay · Serial', leds: 1,
+    a: {
+      title: 'Enciende un LED',
+      instruction: 'Carga este programa y observa qué ocurre. El LED del pin 8 permanece encendido y el Monitor Serie muestra el inicio.',
+      question: '¿Qué diferencia hay entre setup() y loop()?',
+      expected: { kind: 'constant', mask: 1 },
+      code: `const int led = 8;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(led, OUTPUT);
+  Serial.println("Nivel 1 listo: LED en pin 8 encendido");
+}
+
+void loop() {
+  digitalWrite(led, HIGH);
+}`
+    },
+    b: {
+      title: 'Completa: un LED parpadeante',
+      instruction: 'Rellena los espacios para que el LED esté encendido 500 ms y apagado 500 ms.',
+      question: '¿Cuántos milisegundos forman un segundo?',
+      expected: { kind: 'pattern', sequence: [1, 0], duration: 500 },
+      code: `const int led = 8;
+
+void setup() {
+  pinMode(led, __________);
+}
+
+void loop() {
+  digitalWrite(led, HIGH);
+  delay(500);
+  digitalWrite(led, __________);
+  delay(500);
+}`
+    },
+    c: {
+      title: 'Crea: una señal luminosa',
+      instruction: 'Sin copiar el código de la web, programa dos destellos de 200 ms, separados por 200 ms de apagado, seguidos por 1000 ms de pausa. Repite.',
+      question: '¿Cómo modificaste el patrón usando delay()?',
+      expected: { kind: 'pattern', sequence: [1, 0, 1, 0], durations: [200, 200, 200, 1000] },
+      code: `// RETO LIBRE: LED en pin 8
+// Dos destellos (200 ms) y una pausa larga (1000 ms).
+
+void setup() {
+
+}
+
+void loop() {
+
+}`
+    },
+    tip: 'HIGH enciende; LOW apaga. delay(200) equivale a 0,2 segundos. También puedes usar Serial.println() para depurar.'
+  },
+  {
+    id: 2, title: 'Tres LEDs en secuencia', subtitle: 'Orden y temporalidad', concept: 'Secuencias · LOW · HIGH · delay · Serial', leds: 3,
+    a: {
+      title: 'Uno después de otro',
+      instruction: 'Conecta LEDs a los pines 8, 9 y 10. Solo uno debe estar encendido cada vez.',
+      question: '¿Qué sucede si eliminas las instrucciones LOW?',
+      expected: { kind: 'pattern', sequence: [1, 2, 4], duration: 300 },
+      code: `const int led1 = 8;
+const int led2 = 9;
+const int led3 = 10;
+
+void setup() {
+  pinMode(led1, OUTPUT);
+  pinMode(led2, OUTPUT);
+  pinMode(led3, OUTPUT);
+}
+
+void loop() {
+  digitalWrite(led1, HIGH);
+  delay(300);
+  digitalWrite(led1, LOW);
+
+  digitalWrite(led2, HIGH);
+  delay(300);
+  digitalWrite(led2, LOW);
+
+  digitalWrite(led3, HIGH);
+  delay(300);
+  digitalWrite(led3, LOW);
+}`
+    },
+    b: {
+      title: 'Completa: sentido inverso',
+      instruction: 'Conserva el setup() y completa el loop() para obtener LED 3 → LED 2 → LED 1.',
+      question: '¿Qué instrucciones indican el orden?',
+      expected: { kind: 'pattern', sequence: [4, 2, 1], duration: 300 },
+      code: `const int led1 = 8;
+const int led2 = 9;
+const int led3 = 10;
+
+void setup() {
+  pinMode(led1, OUTPUT);
+  pinMode(led2, OUTPUT);
+  pinMode(led3, OUTPUT);
+}
+
+void loop() {
+  digitalWrite(led3, ______);
+  delay(300);
+  digitalWrite(led3, LOW);
+
+  digitalWrite(______, HIGH);
+  delay(300);
+  digitalWrite(led2, LOW);
+
+  digitalWrite(led1, HIGH);
+  delay(______);
+  digitalWrite(led1, ______);
+}`
+    },
+    c: {
+      title: 'Crea: ida y vuelta',
+      instruction: 'Programa la secuencia 1 → 2 → 3 → 2 → 1. Solo uno encendido, 200 ms por LED. Repite el patrón.',
+      question: '¿Cuántas veces debe aparecer el LED 2?',
+      expected: { kind: 'pattern', sequence: [1, 2, 4, 2, 1], duration: 200 },
+      code: `// RETO LIBRE: pines 8, 9 y 10
+// Secuencia: 1-2-3-2-1. Cada paso: 200 ms.
+
+void setup() {
+
+}
+
+void loop() {
+
+}`
+    },
+    tip: 'Cada LED se apaga antes de encender el siguiente.'
+  },
+  {
+    id: 3, title: 'El botón decide', subtitle: 'Entradas digitales y condiciones', concept: 'INPUT_PULLUP · digitalRead · if · else · ==', leds: 2,
+    a: {
+      title: 'Enciende mientras presionas',
+      instruction: 'Conecta el botón entre pin 2 y GND. Haz clic y mantén presionado el botón físico SW1 directamente en el circuito para encender el LED 1.',
+      question: '¿Por qué el botón presionado se lee como LOW?',
+      expected: { kind: 'hold', on: 1, off: 0 },
+      code: `const int led = 8;
+const int boton = 2;
+
+void setup() {
+  pinMode(led, OUTPUT);
+  pinMode(boton, INPUT_PULLUP);
+}
+
+void loop() {
+  if (digitalRead(boton) == LOW) {
+    digitalWrite(led, HIGH);
+  } else {
+    digitalWrite(led, LOW);
+  }
+}`
+    },
+    b: {
+      title: 'Completa: dos LEDs a la vez',
+      instruction: 'Presionado: se encienden los LEDs 1 y 2. Suelto: se apagan ambos.',
+      question: '¿Qué significa el operador == ?',
+      expected: { kind: 'hold', on: 3, off: 0 },
+      code: `const int led1 = 8;
+const int led2 = 9;
+const int boton = 2;
+
+void setup() {
+  pinMode(led1, OUTPUT);
+  pinMode(led2, OUTPUT);
+  pinMode(boton, INPUT_PULLUP);
+}
+
+void loop() {
+  if (digitalRead(boton) == ______) {
+    digitalWrite(led1, ______);
+    digitalWrite(led2, ______);
+  } else {
+    digitalWrite(led1, ______);
+    digitalWrite(led2, ______);
+  }
+}`
+    },
+    c: {
+      title: 'Crea: dos comportamientos',
+      instruction: 'Botón suelto: LED 1 encendido, LED 2 apagado. Botón presionado: LED 1 apagado, LED 2 encendido.',
+      question: '¿Qué partes del programa se ejecutan en cada caso?',
+      expected: { kind: 'hold', on: 2, off: 1 },
+      code: `// RETO LIBRE: LEDs 8 y 9; botón 2-GND
+// Suelto: LED 1. Presionado: LED 2.
+
+void setup() {
+
+}
+
+void loop() {
+
+}`
+    },
+    tip: 'INPUT_PULLUP invierte la lectura habitual: presionado = LOW. Puedes pulsar el botón rojo SW1 directamente sobre la placa.'
+  },
+  {
+    id: 4, title: 'El botón recuerda', subtitle: 'Enclavamiento o toggle', concept: 'bool · true · false · ! · && · estado anterior', leds: 2,
+    a: {
+      title: 'Una pulsación cambia el estado',
+      instruction: 'Haz clic en el botón físico SW1 del circuito y suelta. El LED 1 quedará encendido hasta la siguiente pulsación.',
+      question: '¿Para qué sirve botonAnterior?',
+      expected: { kind: 'latch', on: 1, off: 0 },
+      code: `const int led = 8;
+const int boton = 2;
+
+bool encendido = false;
+bool botonAnterior = HIGH;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(led, OUTPUT);
+  pinMode(boton, INPUT_PULLUP);
+}
+
+void loop() {
+  bool actual = digitalRead(boton);
+
+  if (botonAnterior == HIGH && actual == LOW) {
+    encendido = !encendido;
+    Serial.print("Estado cambiado a: ");
+    Serial.println(encendido);
+  }
+  botonAnterior = actual;
+
+  if (encendido) {
+    digitalWrite(led, HIGH);
+  } else {
+    digitalWrite(led, LOW);
+  }
+  delay(30);
+}`
+    },
+    b: {
+      title: 'Completa: dos LEDs enclavados',
+      instruction: 'Cada nueva pulsación enciende o apaga los dos LEDs juntos.',
+      question: '¿Qué significa !encendido?',
+      expected: { kind: 'latch', on: 3, off: 0 },
+      code: `const int led1 = 8;
+const int led2 = 9;
+const int boton = 2;
+
+bool encendido = false;
+bool botonAnterior = HIGH;
+
+void setup() {
+  pinMode(led1, OUTPUT);
+  pinMode(led2, OUTPUT);
+  pinMode(boton, INPUT_PULLUP);
+}
+
+void loop() {
+  bool actual = digitalRead(boton);
+  if (botonAnterior == ______ && actual == ______) {
+    encendido = !________;
+  }
+  botonAnterior = actual;
+
+  if (encendido) {
+    digitalWrite(led1, ______);
+    digitalWrite(led2, ______);
+  } else {
+    digitalWrite(led1, ______);
+    digitalWrite(led2, ______);
+  }
+  delay(30);
+}`
+    },
+    c: {
+      title: 'Crea: alternador de dos luces',
+      instruction: 'Inicialmente LED 1 encendido y LED 2 apagado. Con cada nueva pulsación alterna cuál está encendido. Debe recordar el estado al soltar.',
+      question: '¿Cómo guardas el estado de un sistema?',
+      expected: { kind: 'latch', on: 2, off: 1 },
+      code: `// RETO LIBRE: dos LEDs y un botón con enclavamiento.
+// Al inicio brilla el LED 1; luego alternan.
+
+void setup() {
+
+}
+
+void loop() {
+
+}`
+    },
+    tip: 'Detecta el flanco HIGH → LOW para contar una sola vez cada pulsación del botón SW1.'
+  },
+  {
+    id: 5, title: 'Botón + secuencia', subtitle: 'Integración de estados y patrones', concept: 'bool activo · if anidados · += · Serial', leds: 3,
+    a: {
+      title: 'Inicia y detiene la secuencia',
+      instruction: 'Un pulso activa LED 1 → 2 → 3; otro pulso detiene y apaga todo. Observa cómo paso += 1 avanza el contador.',
+      question: '¿Por qué necesitamos activo y paso?',
+      expected: { kind: 'latchPattern', sequence: [1, 2, 4], duration: 210 },
+      code: `const int led1 = 8;
+const int led2 = 9;
+const int led3 = 10;
+const int boton = 2;
+
+bool activo = false;
+bool botonAnterior = HIGH;
+int paso = 0;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(led1, OUTPUT);
+  pinMode(led2, OUTPUT);
+  pinMode(led3, OUTPUT);
+  pinMode(boton, INPUT_PULLUP);
+}
+
+void loop() {
+  bool actual = digitalRead(boton);
+  if (botonAnterior == HIGH && actual == LOW) {
+    activo = !activo;
+    Serial.println(activo ? "Secuencia iniciada" : "Secuencia detenida");
+    if (!activo) {
+      digitalWrite(led1, LOW);
+      digitalWrite(led2, LOW);
+      digitalWrite(led3, LOW);
+      paso = 0;
+    }
+  }
+  botonAnterior = actual;
+
+  if (activo) {
+    digitalWrite(led1, LOW);
+    digitalWrite(led2, LOW);
+    digitalWrite(led3, LOW);
+
+    if (paso == 0) {
+      digitalWrite(led1, HIGH);
+    } else if (paso == 1) {
+      digitalWrite(led2, HIGH);
+    } else {
+      digitalWrite(led3, HIGH);
+    }
+
+    delay(180);
+    paso += 1;
+    if (paso == 3) paso = 0;
+  }
+  delay(30);
+}`
+    },
+    b: {
+      title: 'Completa: arranque y parada',
+      instruction: 'Rellena los espacios de la detección del botón, el avance de paso y el apagado.',
+      question: '¿Qué diferencia hay entre activo y paso?',
+      expected: { kind: 'latchPattern', sequence: [1, 2, 4], duration: 210 },
+      code: `const int led1 = 8;
+const int led2 = 9;
+const int led3 = 10;
+const int boton = 2;
+bool activo = false;
+bool botonAnterior = HIGH;
+int paso = 0;
+
+void setup() {
+  pinMode(led1, OUTPUT);
+  pinMode(led2, OUTPUT);
+  pinMode(led3, OUTPUT);
+  pinMode(boton, INPUT_PULLUP);
+}
+
+void loop() {
+  bool actual = digitalRead(boton);
+  if (botonAnterior == HIGH && actual == ______) {
+    activo = !________;
+  }
+  botonAnterior = actual;
+
+  if (activo) {
+    digitalWrite(led1, LOW);
+    digitalWrite(led2, LOW);
+    digitalWrite(led3, LOW);
+    if (paso == 0) {
+      digitalWrite(led1, HIGH);
+    } else if (paso == ______) {
+      digitalWrite(led2, HIGH);
+    } else {
+      digitalWrite(______, HIGH);
+    }
+    delay(180);
+    paso += 1;
+    if (paso == ______) paso = 0;
+  } else {
+    digitalWrite(led1, ______);
+    digitalWrite(led2, ______);
+    digitalWrite(led3, ______);
+    paso = 0;
+  }
+  delay(30);
+}`
+    },
+    c: {
+      title: 'Crea: secuencia de ida y vuelta',
+      instruction: 'Primera pulsación: comienza 1 → 2 → 3 → 2 (150 ms cada paso). Segunda pulsación: detiene y apaga. Tercera pulsación: reinicia desde el LED 1.',
+      question: '¿Cómo puedes representar cuatro pasos con solo tres LEDs?',
+      expected: { kind: 'latchPattern', sequence: [1, 2, 4, 2], duration: 180 },
+      code: `// RETO LIBRE: pines 8, 9, 10; botón 2-GND.
+// Botón de enclavamiento + 1-2-3-2.
+
+void setup() {
+
+}
+
+void loop() {
+
+}`
+    },
+    tip: 'Con delay(), las pulsaciones muy cortas pueden perderse. Mantén pulsado ~300 ms o usa «Pulsar y soltar».'
+  },
+  {
+    id: 6, title: 'Cinco LEDs, for y while', subtitle: 'Repeticiones eficientes', concept: 'for · while · ++ · -- · += · <= · >=', leds: 5,
+    a: {
+      title: 'De 8 hasta 12 usando for (o while)',
+      instruction: 'Cinco LEDs en pines 8–12. Los encendemos uno por uno con un bucle for (también puedes probar con while).',
+      question: '¿Cuántas iteraciones ejecuta el bucle?',
+      expected: { kind: 'pattern', sequence: [1, 2, 4, 8, 16], duration: 250 },
+      code: `void setup() {
+  Serial.begin(9600);
+  for (int pin = 8; pin <= 12; pin++) {
+    pinMode(pin, OUTPUT);
+  }
+}
+
+void loop() {
+  for (int pin = 8; pin <= 12; pin++) {
+    Serial.print("LED activo en D");
+    Serial.println(pin);
+    digitalWrite(pin, HIGH);
+    delay(250);
+    digitalWrite(pin, LOW);
+  }
+}`
+    },
+    b: {
+      title: 'Completa: bucle descendente',
+      instruction: 'Haz que la secuencia recorra LED 5 → LED 4 → LED 3 → LED 2 → LED 1.',
+      question: '¿En qué difieren pin++, pin-- y pin -= 1?',
+      expected: { kind: 'pattern', sequence: [16, 8, 4, 2, 1], duration: 250 },
+      code: `void setup() {
+  for (int pin = 8; pin <= 12; pin++) {
+    pinMode(pin, OUTPUT);
+  }
+}
+
+void loop() {
+  for (int pin = ______;
+       pin >= ______;
+       pin______) {
+    digitalWrite(pin, ______);
+    delay(250);
+    digitalWrite(pin, ______);
+  }
+}`
+    },
+    c: {
+      title: 'Crea: desafío integrador',
+      instruction: 'Combina enclavamiento y bucle (for o while): una pulsación inicia la secuencia 1→2→3→4→5; otra pulsación la detiene y apaga; la siguiente reinicia desde LED 1.',
+      question: '¿Qué parte puede repetirse con for o while? ¿Qué variable guarda el encendido?',
+      expected: { kind: 'latchPattern', sequence: [1, 2, 4, 8, 16], duration: 250 },
+      code: `// RETO FINAL: cinco LEDs (8,9,10,11,12)
+// Botón en pin 2. Usar if, bool y for/while.
+// Primera pulsación: iniciar; segunda: parar.
+
+void setup() {
+
+}
+
+void loop() {
+
+}`
+    },
+    tip: 'Tanto for como while permiten configurar y recorrer los cinco pines sin repetir cinco bloques de código.'
+  }
+];
+
+/* ============================================================================
+   RESALTADOR DE SINTAXIS C++ / ARDUINO EN TIEMPO REAL
+   ============================================================================ */
+const KW_SET = new Set(['void', 'if', 'else', 'for', 'while', 'do', 'return', 'break', 'continue', 'switch', 'case']);
+const TYPE_SET = new Set(['const', 'int', 'bool', 'boolean', 'long', 'byte', 'unsigned', 'char', 'String', 'float', 'double']);
+const CONST_SET = new Set(['HIGH', 'LOW', 'OUTPUT', 'INPUT', 'INPUT_PULLUP', 'true', 'false', 'LED_BUILTIN']);
+const FN_SET = new Set(['setup', 'loop', 'pinMode', 'digitalWrite', 'digitalRead', 'analogRead', 'analogWrite', 'delay', 'millis']);
+const SERIAL_SET = new Set(['Serial', 'begin', 'print', 'println', 'available', 'read']);
+
+function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function highlightArduinoCode(code) {
+  const tokenRegex = /\/\/[^\n]*|\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|_{3,}|\b[A-Za-z_]\w*\b|\b\d+(?:\.\d+)?\b|\+=|-=|\*=|\/=|%=|==|!=|<=|>=|&&|\|\||\+\+|--|[=<>!+\-*\/%]/g;
+  let result = '';
+  let lastIdx = 0;
+  let match;
+
+  while ((match = tokenRegex.exec(code)) !== null) {
+    if (match.index > lastIdx) {
+      result += escapeHtml(code.slice(lastIdx, match.index));
+    }
+    const tok = match[0];
+    const esc = escapeHtml(tok);
+
+    if (tok.startsWith('//') || tok.startsWith('/*')) {
+      result += `<span class="tok-comment">${esc}</span>`;
+    } else if (tok.startsWith('"') || tok.startsWith("'")) {
+      result += `<span class="tok-str">${esc}</span>`;
+    } else if (/^_{3,}$/.test(tok)) {
+      result += `<span class="tok-blank">${esc}</span>`;
+    } else if (/^\d/.test(tok)) {
+      result += `<span class="tok-num">${esc}</span>`;
+    } else if (/^[A-Za-z_]/.test(tok)) {
+      if (KW_SET.has(tok)) result += `<span class="tok-kw">${esc}</span>`;
+      else if (TYPE_SET.has(tok)) result += `<span class="tok-type">${esc}</span>`;
+      else if (CONST_SET.has(tok)) result += `<span class="tok-const">${esc}</span>`;
+      else if (FN_SET.has(tok)) result += `<span class="tok-fn">${esc}</span>`;
+      else if (SERIAL_SET.has(tok)) result += `<span class="tok-serial">${esc}</span>`;
+      else result += esc;
+    } else {
+      result += `<span class="tok-op">${esc}</span>`;
+    }
+    lastIdx = tokenRegex.lastIndex;
+  }
+
+  if (lastIdx < code.length) {
+    result += escapeHtml(code.slice(lastIdx));
+  }
+  if (code.endsWith('\n')) {
+    result += ' ';
+  }
+  return result;
+}
+
+/* ============================================================================
+   INTÉRPRETE DIDÁCTICO ARDUINO C++ 2.0 (Soporta while, Serial, +=, -=, millis)
+   ============================================================================ */
+class ArduinoSyntaxError extends Error {
+  constructor(message, pos = 0) {
+    super(message);
+    this.position = pos;
+    this.name = 'ArduinoSyntaxError';
+  }
+}
+
+function lexArduino(source) {
+  const t = [];
+  const pattern = /\s+|\/\/[^\n]*|\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\d+|[A-Za-z_]\w*|\+=|-=|\*=|\/=|%=|==|!=|<=|>=|&&|\|\||\+\+|--|[{}();,.:?<>!+\-*\/%=]/y;
+  let i = 0;
+  while (i < source.length) {
+    pattern.lastIndex = i;
+    const m = pattern.exec(source);
+    if (!m) {
+      throw new ArduinoSyntaxError('Símbolo no reconocido: ' + source[i], i);
+    }
+    const text = m[0];
+    if (!/^\s|^\/\//.test(text) && !text.startsWith('/*')) {
+      t.push({ s: text, pos: i });
+    }
+    i = pattern.lastIndex;
+  }
+  t.push({ s: 'EOF', pos: source.length });
+  return t;
+}
+
+class ArduinoParser {
+  constructor(src) {
+    this.src = src;
+    this.t = lexArduino(src);
+    this.i = 0;
+  }
+  peek() { return this.t[this.i].s; }
+  at(s) { return this.peek() === s; }
+  pop() { return this.t[this.i++]; }
+  eat(s) { if (this.at(s)) { this.pop(); return true; } return false; }
+  need(s) {
+    if (!this.eat(s)) {
+      const p = this.t[this.i - 1];
+      if (s === ';' && p && this.t[this.i].pos > p.pos) {
+        throw new ArduinoSyntaxError(`Falta «;» al final de esta instrucción (se encontró «${this.peek()}»)`, p.pos);
+      }
+      this.fail(`Se esperaba «${s}», pero aparece «${this.peek()}»`);
+    }
+  }
+  fail(msg) { throw new ArduinoSyntaxError(msg, this.t[this.i].pos); }
+  name() {
+    const x = this.pop();
+    if (!/^[A-Za-z_]\w*$/.test(x.s)) {
+      this.i--;
+      this.fail('Se esperaba el nombre de una variable o función');
+    }
+    return x.s;
+  }
+  typeStart() {
+    return ['int', 'bool', 'boolean', 'long', 'byte', 'const', 'unsigned', 'char', 'String'].includes(this.peek());
+  }
+  type() {
+    const c = !!this.eat('const');
+    if (this.eat('unsigned')) {}
+    const typ = this.pop().s;
+    if (!['int', 'bool', 'boolean', 'long', 'byte', 'char', 'String'].includes(typ)) {
+      this.i--;
+      this.fail('Se esperaba un tipo válido (int, bool, long, byte o String)');
+    }
+    return { typ, constant: c };
+  }
+  program() {
+    const globals = [], functions = {};
+    while (!this.at('EOF')) {
+      if (this.eat('void') || (this.typeStart() && this.t[this.i + 2]?.s === '(')) {
+        if (!this.t[this.i - 1] || this.t[this.i - 1].s !== 'void') {
+          this.type();
+        }
+        const fnName = this.name();
+        this.need('(');
+        while (!this.at(')') && !this.at('EOF')) this.pop();
+        this.need(')');
+        functions[fnName] = this.block();
+      } else if (this.typeStart()) {
+        globals.push(this.declaration());
+      } else {
+        this.fail('Solo se permiten declaraciones de variables o funciones fuera de setup()/loop()');
+      }
+    }
+    if (!functions.setup || !functions.loop) {
+      this.fail('Debes definir tanto void setup() como void loop()');
+    }
+    return { globals, functions };
+  }
+  declaration() {
+    const type = this.type();
+    const name = this.name();
+    let value = null;
+    if (this.eat('=')) value = this.expression();
+    this.need(';');
+    return { type: 'declare', name, value, ...type };
+  }
+  block() {
+    this.need('{');
+    const stmts = [];
+    while (!this.at('}') && !this.at('EOF')) stmts.push(this.statement());
+    this.need('}');
+    return { type: 'block', stmts };
+  }
+  statement() {
+    if (this.at('{')) return this.block();
+    if (this.eat('if')) {
+      this.need('(');
+      const test = this.expression();
+      this.need(')');
+      const yes = this.statement();
+      const no = this.eat('else') ? this.statement() : null;
+      return { type: 'if', test, yes, no };
+    }
+    if (this.eat('while')) {
+      this.need('(');
+      const test = this.expression();
+      this.need(')');
+      const body = this.statement();
+      return { type: 'while', test, body };
+    }
+    if (this.eat('for')) {
+      this.need('(');
+      let init = null;
+      if (!this.at(';')) {
+        init = this.typeStart() ? this.declaration() : { type: 'expr', expr: this.expression() };
+        if (init.type === 'expr') this.need(';');
+      } else {
+        this.need(';');
+      }
+      const test = this.at(';') ? null : this.expression();
+      this.need(';');
+      const post = this.at(')') ? null : this.expression();
+      this.need(')');
+      return { type: 'for', init, test, post, body: this.statement() };
+    }
+    if (this.eat('break')) {
+      this.need(';');
+      return { type: 'break' };
+    }
+    if (this.eat('continue')) {
+      this.need(';');
+      return { type: 'continue' };
+    }
+    if (this.eat('return')) {
+      const expr = this.at(';') ? null : this.expression();
+      this.need(';');
+      return { type: 'return', expr };
+    }
+    if (this.typeStart()) return this.declaration();
+    if (this.eat(';')) return { type: 'noop' };
+    const expr = this.expression();
+    this.need(';');
+    return { type: 'expr', expr };
+  }
+  expression() { return this.assignment(); }
+  assignment() {
+    const left = this.ternary();
+    const assignOps = ['=', '+=', '-=', '*=', '/=', '%='];
+    if (assignOps.includes(this.peek())) {
+      const op = this.pop().s;
+      if (left.type !== 'id') this.fail('La asignación necesita una variable a la izquierda');
+      return { type: 'assign', op, left, value: this.assignment() };
+    }
+    return left;
+  }
+  ternary() {
+    let node = this.or();
+    if (this.eat('?')) {
+      const yes = this.expression();
+      this.need(':');
+      const no = this.ternary();
+      return { type: 'ternary', test: node, yes, no };
+    }
+    return node;
+  }
+  binary(next, ops) {
+    let node = next.call(this);
+    while (ops.includes(this.peek())) {
+      const op = this.pop().s;
+      node = { type: 'binary', op, left: node, right: next.call(this) };
+    }
+    return node;
+  }
+  or() { return this.binary(this.and, ['||']); }
+  and() { return this.binary(this.equal, ['&&']); }
+  equal() { return this.binary(this.compare, ['==', '!=']); }
+  compare() { return this.binary(this.add, ['<', '>', '<=', '>=']); }
+  add() { return this.binary(this.multiply, ['+', '-']); }
+  multiply() { return this.binary(this.unary, ['*', '/', '%']); }
+  unary() {
+    if (['!', '-', '+', '++', '--'].includes(this.peek())) {
+      const op = this.pop().s;
+      return { type: 'unary', op, right: this.unary() };
+    }
+    return this.primary();
+  }
+  primary() {
+    let node;
+    const tok = this.peek();
+    if (this.eat('(')) {
+      node = this.expression();
+      this.need(')');
+    } else if (/^\d+$/.test(tok)) {
+      node = { type: 'num', value: Number(this.pop().s) };
+    } else if (tok.startsWith('"') || tok.startsWith("'")) {
+      const raw = this.pop().s;
+      const content = raw.slice(1, -1)
+        .replace(/\\n/g, '\n')
+        .replace(/\\t/g, '\t')
+        .replace(/\\"/g, '"')
+        .replace(/\\'/g, "'")
+        .replace(/\\\\/g, '\\');
+      node = { type: 'str', value: content };
+    } else if (/^[A-Za-z_]\w*$/.test(tok)) {
+      node = { type: 'id', name: this.pop().s };
+    } else {
+      this.fail('Falta un valor, variable o expresión');
+    }
+
+    while (true) {
+      if (this.eat('.')) {
+        const prop = this.name();
+        node = { type: 'member', object: node, property: prop };
+      } else if (this.eat('(')) {
+        const args = [];
+        if (!this.at(')')) {
+          args.push(this.expression());
+          while (this.eat(',')) args.push(this.expression());
+        }
+        this.need(')');
+        if (node.type === 'id') {
+          node = { type: 'call', name: node.name, args };
+        } else if (node.type === 'member' && node.object.type === 'id') {
+          node = { type: 'call', name: `${node.object.name}.${node.property}`, args };
+        } else {
+          this.fail('Llamada a función no válida');
+        }
+      } else if (this.at('++') || this.at('--')) {
+        const op = this.pop().s;
+        node = { type: 'postfix', op, left: node };
+      } else {
+        break;
+      }
+    }
+    return node;
+  }
+}
+
+class Scope {
+  constructor(parent = null) {
+    this.parent = parent;
+    this.vars = new Map();
+  }
+  define(name, value) { this.vars.set(name, value); }
+  find(name) {
+    if (this.vars.has(name)) return this;
+    if (this.parent) return this.parent.find(name);
+    throw Error(`Variable «${name}» no declarada`);
+  }
+  get(n) { return this.find(n).vars.get(n); }
+  set(n, v) { this.find(n).vars.set(n, v); return v; }
+}
+
+class ArduinoEngine {
+  constructor(source, onSerial) {
+    this.source = source;
+    this.ast = new ArduinoParser(source).program();
+    this.pins = {};
+    this.mode = {};
+    this.buttonPressed = false;
+    this.now = 0;
+    this.nextAt = 0;
+    this.running = true;
+    this.serialStarted = false;
+    this.baudRate = 9600;
+    this.onSerial = onSerial || (() => {});
+    this.vars = new Scope();
+    this.builtins = {
+      HIGH: 1, LOW: 0, OUTPUT: 1, INPUT: 0, INPUT_PULLUP: 2,
+      true: true, false: false, LED_BUILTIN: 13
+    };
+    this.gen = this.run();
+  }
+
+  mask() {
+    let mask = 0;
+    for (let pin = 8; pin <= 12; pin++) {
+      if (this.pins[pin]) mask |= 1 << (pin - 8);
+    }
+    return mask;
+  }
+
+  get(name, env) {
+    if (Object.hasOwn(this.builtins, name)) return this.builtins[name];
+    return env.get(name);
+  }
+
+  expr(n, env) {
+    if (!n) return 0;
+    switch (n.type) {
+      case 'num': return n.value;
+      case 'str': return n.value;
+      case 'id': return this.get(n.name, env);
+      case 'ternary': return this.expr(n.test, env) ? this.expr(n.yes, env) : this.expr(n.no, env);
+      case 'assign': {
+        const rhs = this.expr(n.value, env);
+        if (n.op === '=') return env.set(n.left.name, rhs);
+        const cur = env.get(n.left.name);
+        switch (n.op) {
+          case '+=': return env.set(n.left.name, cur + rhs);
+          case '-=': return env.set(n.left.name, cur - rhs);
+          case '*=': return env.set(n.left.name, cur * rhs);
+          case '/=': return env.set(n.left.name, rhs === 0 ? 0 : Math.trunc(cur / rhs));
+          case '%=': return env.set(n.left.name, rhs === 0 ? 0 : cur % rhs);
+        }
+        return rhs;
+      }
+      case 'unary': {
+        const v = this.expr(n.right, env);
+        if (n.op === '!') return !v;
+        if (n.op === '-') return -v;
+        if (n.op === '+') return +v;
+        if (n.right.type !== 'id') throw Error('++ y -- se usan sobre variables');
+        return env.set(n.right.name, v + (n.op === '++' ? 1 : -1));
+      }
+      case 'postfix': {
+        if (n.left.type !== 'id') throw Error('++ y -- se usan sobre variables');
+        const v = env.get(n.left.name);
+        env.set(n.left.name, v + (n.op === '++' ? 1 : -1));
+        return v;
+      }
+      case 'binary': {
+        const a = this.expr(n.left, env);
+        if (n.op === '&&') return !!a && !!this.expr(n.right, env);
+        if (n.op === '||') return !!a || !!this.expr(n.right, env);
+        const b = this.expr(n.right, env);
+        switch (n.op) {
+          case '==': return (typeof a === 'string' || typeof b === 'string') ? String(a) === String(b) : Number(a) === Number(b);
+          case '!=': return (typeof a === 'string' || typeof b === 'string') ? String(a) !== String(b) : Number(a) !== Number(b);
+          case '<': return a < b;
+          case '>': return a > b;
+          case '<=': return a <= b;
+          case '>=': return a >= b;
+          case '+': return a + b;
+          case '-': return a - b;
+          case '*': return a * b;
+          case '/': return b === 0 ? 0 : Math.trunc(a / b);
+          case '%': return b === 0 ? 0 : a % b;
+        }
+        return 0;
+      }
+      case 'call': {
+        const args = n.args.map(v => this.expr(v, env));
+        switch (n.name) {
+          case 'pinMode':
+            this.mode[args[0]] = args[1];
+            return 0;
+          case 'digitalWrite': {
+            const pin = Number(args[0]);
+            if (!Number.isInteger(pin) || pin < 0 || pin > 13) throw Error('Pin digital no válido');
+            if (this.mode[pin] !== 1) {
+              this.note = `Falta pinMode(${pin}, OUTPUT) en setup(): en una placa real el LED brillaría muy débil.`;
+            } else if (pin < 8 || pin > 12) {
+              this.note = `El pin ${pin} no tiene un LED conectado en esta placa (usa pines 8 a 12).`;
+            }
+            this.pins[pin] = !!args[1];
+            return 0;
+          }
+          case 'digitalRead':
+            return args[0] === 2 ? (this.buttonPressed ? 0 : 1) : (this.pins[args[0]] ? 1 : 0);
+          case 'delay':
+            return { sleep: Math.max(0, Math.min(Number(args[0]) || 0, 30000)) };
+          case 'millis':
+            return Math.floor(this.now);
+          case 'Serial.begin':
+            this.serialStarted = true;
+            this.baudRate = Number(args[0]) || 9600;
+            this.onSerial({ type: 'begin', baud: this.baudRate });
+            return 0;
+          case 'Serial.print':
+          case 'Serial.println': {
+            if (!this.serialStarted && !this.note) {
+              this.note = 'Recuerda iniciar el puerto serie con Serial.begin(9600); en setup().';
+            }
+            const val = args.length > 0 ? String(args[0]) : '';
+            const text = n.name === 'Serial.println' ? val + '\n' : val;
+            this.onSerial({ type: 'data', text });
+            return 0;
+          }
+          default:
+            throw Error(`Función «${n.name}» no admitida por el simulador`);
+        }
+      }
+      default:
+        throw Error('Expresión no admitida');
+    }
+  }
+
+  *stmt(node, env) {
+    yield { tick: true };
+    switch (node.type) {
+      case 'block': {
+        const scoped = new Scope(env);
+        for (const part of node.stmts) {
+          const ctrl = yield* this.stmt(part, scoped);
+          if (ctrl) return ctrl;
+        }
+        break;
+      }
+      case 'declare':
+        env.define(node.name, node.value === null ? 0 : this.expr(node.value, env));
+        break;
+      case 'expr': {
+        const out = this.expr(node.expr, env);
+        if (out && typeof out === 'object' && 'sleep' in out) yield out;
+        break;
+      }
+      case 'if':
+        return yield* this.stmt(this.expr(node.test, env) ? node.yes : (node.no || { type: 'noop' }), env);
+      case 'while': {
+        const whileEnv = new Scope(env);
+        let tightCount = 0;
+        let lastTime = this.now;
+        while (this.expr(node.test, whileEnv)) {
+          const ctrl = yield* this.stmt(node.body, whileEnv);
+          if (ctrl === 'break') break;
+          if (this.now === lastTime) {
+            if (++tightCount > 250) {
+              tightCount = 0;
+              yield { sleep: 1 };
+            }
+          } else {
+            tightCount = 0;
+            lastTime = this.now;
+          }
+          yield { tick: true };
+        }
+        break;
+      }
+      case 'for': {
+        const forEnv = new Scope(env);
+        if (node.init) yield* this.stmt(node.init, forEnv);
+        let tightCount = 0;
+        let lastTime = this.now;
+        while (!node.test || this.expr(node.test, forEnv)) {
+          const ctrl = yield* this.stmt(node.body, forEnv);
+          if (ctrl === 'break') break;
+          if (node.post) this.expr(node.post, forEnv);
+          if (this.now === lastTime) {
+            if (++tightCount > 250) {
+              tightCount = 0;
+              yield { sleep: 1 };
+            }
+          } else {
+            tightCount = 0;
+            lastTime = this.now;
+          }
+          yield { tick: true };
+        }
+        break;
+      }
+      case 'break': return 'break';
+      case 'continue': return 'continue';
+      case 'return': return 'return';
+      case 'noop': break;
+      default:
+        throw Error('Instrucción no reconocida');
+    }
+    return null;
+  }
+
+  *run() {
+    for (const g of this.ast.globals) yield* this.stmt(g, this.vars);
+    yield* this.stmt(this.ast.functions.setup, this.vars);
+    while (true) {
+      yield* this.stmt(this.ast.functions.loop, this.vars);
+    }
+  }
+
+  advance(dt) {
+    this.now += Math.max(0, Math.min(dt, 150));
+    if (!this.running) return;
+    let budget = 800;
+    while (budget-- > 0 && this.nextAt <= this.now) {
+      const r = this.gen.next();
+      if (r.done) {
+        this.running = false;
+        break;
+      }
+      if (r.value?.sleep) {
+        this.nextAt += r.value.sleep;
+      }
+    }
+    if (budget <= 0 && this.nextAt < this.now) {
+      this.nextAt = this.now;
+    }
+  }
+}
+
+function formatArduinoError(err, source) {
+  const line = err.position === undefined ? null : source.slice(0, err.position).split('\n').length;
+  return line ? `Línea ${line}: ${err.message}` : err.message;
+}
+
+/* ============================================================================
+   INTERFAZ, PULSADOR FÍSICO EN CIRCUITO Y SINCRONIZACIÓN
+   ============================================================================ */
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const STAGES = ['a', 'b', 'c'];
+
+  let lessonIndex = 0, stage = 'a', engine = null, codeDirty = false;
+  let hold = false, lockedHold = false, pulseTimer = null;
+  let expectedLatch = false, expectedOnSince = 0, referenceClock = 0;
+  let lastFrame = performance.now(), lastPaint = 0, paused = false;
+  let doneSet = new Set(), okMs = 0, badMs = 0, seenBtn = false;
+  let verdictShown = '', errLine = 0, noteShown = '', serialBuffer = '';
+
+  const storeKey = (li, s) => `arduino-lab-v2-l${li}-stage-${s}`;
+  const stageName = { a: 'EJEMPLO COMPLETO', b: 'COMPLETA EL CÓDIGO', c: 'RETO LIBRE' };
+
+  function showMessage(txt, kind = '') {
+    const box = $('consoleOutput');
+    box.textContent = txt;
+    box.className = 'console-message ' + kind;
+  }
+
+  function clearSerial() {
+    serialBuffer = '';
+    $('serialOutput').innerHTML = '<span class="serial-placeholder">Monitor serie vacío. Esperando Serial.print()...</span>';
+  }
+
+  function handleSerialEvent(evt) {
+    if (evt.type === 'begin') {
+      $('serialBaudTag').textContent = `${evt.baud} baud`;
+      return;
+    }
+    if (evt.type === 'data') {
+      serialBuffer += evt.text;
+      if (serialBuffer.length > 4000) {
+        serialBuffer = serialBuffer.slice(serialBuffer.length - 4000);
+      }
+      const box = $('serialOutput');
+      box.textContent = serialBuffer;
+      box.scrollTop = box.scrollHeight;
+    }
+  }
+
+  function formatTime(t) {
+    const secs = Math.floor(t / 1000);
+    return `${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}`;
+  }
+
+  function expectedMask() {
+    const spec = LESSONS[lessonIndex][stage].expected;
+    switch (spec.kind) {
+      case 'constant': return spec.mask;
+      case 'hold': return hold ? spec.on : spec.off;
+      case 'latch': return expectedLatch ? spec.on : spec.off;
+      case 'pattern': {
+        const durations = spec.durations || spec.sequence.map(() => spec.duration);
+        const cycle = durations.reduce((a, b) => a + b, 0);
+        let t = referenceClock % cycle;
+        for (let k = 0; k < durations.length; k++) {
+          if (t < durations[k]) return spec.sequence[k];
+          t -= durations[k];
+        }
+        return 0;
+      }
+      case 'latchPattern':
+        if (!expectedLatch) return 0;
+        return spec.sequence[Math.floor((referenceClock - expectedOnSince) / spec.duration) % spec.sequence.length];
+      default:
+        return 0;
+    }
+  }
+
+  function describe(mask) {
+    const active = [];
+    for (let i = 0; i < LESSONS[lessonIndex].leds; i++) {
+      if (mask & (1 << i)) active.push(i + 1);
+    }
+    return active.length ? ('Encendido: ' + active.map(x => 'LED ' + x).join(', ')) : 'Todos apagados';
+  }
+
+  function hasButtonInCurrentContext() {
+    return LESSONS[lessonIndex].id >= 3 || /\bdigitalRead\s*\(\s*(2|boton)\b/.test($('codeEditor')?.value || '');
+  }
+
+  function boardMarkup(boardType) {
+    const ledsHtml = Array.from({ length: LESSONS[lessonIndex].leds }, (_, i) => `
+      <div class="led-assembly">
+        <span class="led" data-led="${i}"></span>
+        <span class="led-pin">D${i + 8}</span>
+        <span class="led-number">LED ${i + 1}</span>
+      </div>
+    `).join('');
+
+    if (!hasButtonInCurrentContext()) return ledsHtml;
+
+    return `
+      ${ledsHtml}
+      <div class="pcb-divider" aria-hidden="true"></div>
+      <div class="pcb-switch-unit" data-switch-unit="${boardType}">
+        <div class="pcb-switch-head">
+          <span class="pcb-switch-tag">SW1 · D2</span>
+          <button type="button" class="pcb-lock-btn ${lockedHold ? 'locked' : ''}" data-action="lock-btn" title="Fijar o soltar botón mantenido">
+            ${lockedHold ? '📌 Fijo' : 'Fijar'}
+          </button>
+        </div>
+        <button type="button" class="tactile-btn ${hold ? 'pressed' : ''}" data-action="physical-btn" aria-label="Pulsador físico SW1 en pin D2. Mantén pulsado con el ratón o pantalla táctil">
+          <span class="tactile-cap">SW1</span>
+        </button>
+        <span class="pcb-switch-state ${hold ? 'low' : ''}" data-switch-label>
+          ${hold ? 'LOW (0V)' : 'HIGH (5V)'}
+        </span>
+      </div>
+    `;
+  }
+
+  function bindBoardButtonEvents(rootId) {
+    const root = $(rootId);
+    const physBtn = root.querySelector('[data-action="physical-btn"]');
+    const lockBtn = root.querySelector('[data-action="lock-btn"]');
+
+    if (physBtn) {
+      physBtn.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        clearTimeout(pulseTimer);
+        lockedHold = false;
+        setButton(true);
+      });
+      const release = e => {
+        if (!lockedHold && hold) {
+          e.preventDefault();
+          setButton(false);
+        }
+      };
+      physBtn.addEventListener('pointerup', release);
+      physBtn.addEventListener('pointercancel', release);
+      physBtn.addEventListener('pointerleave', release);
+      physBtn.addEventListener('keydown', e => {
+        if ((e.key === ' ' || e.key === 'Enter') && !hold) {
+          e.preventDefault();
+          setButton(true);
+        }
+      });
+      physBtn.addEventListener('keyup', e => {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          lockedHold = false;
+          setButton(false);
+        }
+      });
+    }
+
+    if (lockBtn) {
+      lockBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        clearTimeout(pulseTimer);
+        lockedHold = !lockedHold;
+        setButton(lockedHold);
+      });
+    }
+  }
+
+  function syncBoardSwitchVisuals() {
+    document.querySelectorAll('[data-action="physical-btn"]').forEach(btn => {
+      btn.classList.toggle('pressed', hold);
+    });
+    document.querySelectorAll('[data-action="lock-btn"]').forEach(btn => {
+      btn.classList.toggle('locked', lockedHold);
+      btn.textContent = lockedHold ? '📌 Fijo' : 'Fijar';
+    });
+    document.querySelectorAll('[data-switch-label]').forEach(lbl => {
+      lbl.classList.toggle('low', hold);
+      lbl.textContent = hold ? 'LOW (0V)' : 'HIGH (5V)';
+    });
+  }
+
+  function renderLeds(rootId, mask) {
+    const root = $(rootId), count = LESSONS[lessonIndex].leds;
+    for (let i = 0; i < count; i++) {
+      const led = root.querySelector(`[data-led="${i}"]`);
+      if (led) led.classList.toggle('lit', !!(mask & (1 << i)));
+    }
+  }
+
+  function renderNav() {
+    const html = LESSONS.map((lesson, i) => `
+      <button type="button" class="nav-item ${i === lessonIndex ? 'active' : ''}" data-level="${i}">
+        <span class="nav-number">${String(i + 1).padStart(2, '0')}</span>
+        <span><strong>${lesson.title}</strong><small>${lesson.subtitle}</small></span>
+      </button>
+    `).join('');
+    $('lessonNav').innerHTML = html;
+    $('lessonNav').querySelectorAll('button').forEach(b => {
+      b.addEventListener('click', () => loadLesson(Number(b.dataset.level), 'a'));
+    });
+  }
+
+  function syncEditorScroll() {
+    const area = $('codeEditor');
+    const pre = $('codeHighlight');
+    $('lineNumbers').scrollTop = area.scrollTop;
+    pre.scrollTop = area.scrollTop;
+    pre.scrollLeft = area.scrollLeft;
+  }
+
+  function editorLines() {
+    const area = $('codeEditor');
+    const code = area.value;
+    const n = code.split('\n').length;
+    $('lineNumbers').innerHTML = Array.from({ length: n }, (_, i) =>
+      `<span${i + 1 === errLine ? ' class="err"' : ''}>${i + 1}</span>`
+    ).join('');
+    $('lineCount').textContent = n + ' LÍNEAS';
+    $('codeHighlightContent').innerHTML = highlightArduinoCode(code);
+    syncEditorScroll();
+  }
+
+  function saveCurrent() {
+    try {
+      localStorage.setItem(storeKey(lessonIndex + 1, stage), $('codeEditor').value);
+    } catch {}
+  }
+
+  function refreshBoardsMarkup() {
+    const useBtn = hasButtonInCurrentContext();
+    $('buttonControls').hidden = !useBtn;
+    $('expectedBoard').innerHTML = boardMarkup('expected');
+    $('userBoard').innerHTML = boardMarkup('user');
+    bindBoardButtonEvents('expectedBoard');
+    bindBoardButtonEvents('userBoard');
+  }
+
+  function setBadgeState(text, mode = '') {
+    const badge = $('simBadge');
+    badge.textContent = text;
+    badge.className = 'sim-badge' + (mode ? ' ' + mode : '');
+  }
+
+  function loadLesson(index, newStage) {
+    if (index < 0 || index >= LESSONS.length) return;
+    lessonIndex = index;
+    stage = newStage;
+    codeDirty = false;
+    errLine = 0;
+    engine = null;
+    paused = false;
+    hold = false;
+    lockedHold = false;
+    expectedLatch = false;
+    referenceClock = 0;
+    expectedOnSince = 0;
+    clearTimeout(pulseTimer);
+
+    $('holdBtn').classList.remove('holding');
+    $('holdBtn').textContent = 'Mantener presionado';
+    $('buttonState').textContent = 'Estado en Pin D2: suelto (HIGH · 5V)';
+
+    const lesson = LESSONS[lessonIndex], exercise = lesson[stage];
+    $('levelLabel').textContent = `NIVEL ${String(index + 1).padStart(2, '0')} / 06`;
+    $('crumb').textContent = `NIVEL ${String(index + 1).padStart(2, '0')}`;
+    $('lessonTitle').textContent = lesson.title;
+    $('lessonSubtitle').textContent = lesson.subtitle;
+    $('conceptChips').innerHTML = lesson.concept.split(' · ').map(text => {
+      const isNew = ['while', 'Serial', '+='].includes(text);
+      return `<span class="chip ${isNew ? 'chip-new' : ''}">${text.replace(/</g, '&lt;')}</span>`;
+    }).join('');
+    $('wiringText').textContent = `LEDs: ${Array.from({ length: lesson.leds }, (_, i) => 'LED ' + (i + 1) + ' → D' + (i + 8)).join(' · ')}. ${lesson.id >= 3 ? 'Botón físico SW1: D2 ↔ GND. ' : ''}Resistencia de 220–330 Ω por LED.`;
+    $('stageTitle').textContent = exercise.title;
+    $('stageInstruction').textContent = exercise.instruction;
+    $('questionText').textContent = exercise.question;
+    $('tipText').textContent = lesson.tip;
+    $('stagePill').textContent = stageName[stage];
+
+    document.querySelectorAll('.path-tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.stage === stage);
+      t.setAttribute('aria-pressed', String(t.dataset.stage === stage));
+    });
+
+    renderNav();
+    renderDone();
+
+    let recovered;
+    try { recovered = localStorage.getItem(storeKey(lesson.id, stage)); } catch {}
+    $('codeEditor').value = recovered ?? exercise.code;
+    editorLines();
+    $('codeEditor').scrollTop = 0;
+    refreshBoardsMarkup();
+
+    setBadgeState('SIN EJECUTAR');
+    $('userState').textContent = 'Sin ejecutar';
+    $('simTime').textContent = '00:00';
+    $('stopBtn').textContent = '⏸ Pausar';
+
+    const step = index * 3 + STAGES.indexOf(stage);
+    $('progressDots').innerHTML = Array.from({ length: 3 }, (_, i) =>
+      `<span class="progress-dot ${i === STAGES.indexOf(stage) ? 'current' : ''}"></span>`
+    ).join('');
+    $('prevBtn').disabled = step === 0;
+    $('nextBtn').disabled = step === 17;
+    $('nextBtn').textContent = step === 17 ? 'Fin de la guía' : 'Siguiente ejercicio →';
+
+    showMessage(
+      stage === 'b'
+        ? 'Completa los espacios resaltados ______ y después pulsa «Ejecutar código».'
+        : stage === 'c'
+          ? 'Diseña tu solución (puedes usar for, while, += o Serial), ejecútala y compara ambas placas.'
+          : 'Ejecuta el código de ejemplo. Después modifica valores o pulsa SW1 en la placa.'
+    );
+    clearSerial();
+    paint();
+    if (stage === 'a') runCode();
+  }
+
+  function runCode() {
+    const code = $('codeEditor').value;
+    saveCurrent();
+    refreshBoardsMarkup();
+    clearSerial();
+
+    if (/_{3,}/.test(code)) {
+      engine = null;
+      setBadgeState('INCOMPLETO', 'error');
+      showMessage('Hay espacios ______ sin completar. Sustitúyelos por instrucciones o valores válidos.', 'error');
+      paint();
+      return;
+    }
+
+    try {
+      engine = new ArduinoEngine(code, handleSerialEvent);
+      engine.buttonPressed = hold;
+      referenceClock = 0;
+      expectedLatch = false;
+      expectedOnSince = 0;
+      okMs = 0;
+      badMs = 0;
+      seenBtn = false;
+      verdictShown = '';
+      noteShown = '';
+      errLine = 0;
+      editorLines();
+      paused = false;
+      $('stopBtn').textContent = '⏸ Pausar';
+      setBadgeState('EJECUTANDO', 'running');
+      showMessage('✓ Programa en ejecución. Interactúa con el botón físico SW1 o revisa el Monitor Serie.', 'ok');
+      engine.advance(0);
+      paint();
+    } catch (err) {
+      engine = null;
+      paused = false;
+      setBadgeState('ERROR DE CÓDIGO', 'error');
+      errLine = err.position === undefined ? 0 : code.slice(0, err.position).split('\n').length;
+      editorLines();
+      showMessage('✕ ' + formatArduinoError(err, code), 'error');
+      paint();
+    }
+  }
+
+  function togglePause() {
+    if (!engine) {
+      showMessage('Ejecuta un programa válido antes de pausarlo.', 'error');
+      return;
+    }
+    paused = !paused;
+    engine.running = !paused;
+    $('stopBtn').textContent = paused ? '▶ Reanudar' : '⏸ Pausar';
+    setBadgeState(paused ? 'PAUSADO' : 'EJECUTANDO', paused ? '' : 'running');
+  }
+
+  function setButton(value) {
+    if (!hasButtonInCurrentContext()) return;
+    const previous = hold;
+    hold = !!value;
+    if (hold && !previous) {
+      expectedLatch = !expectedLatch;
+      if (expectedLatch) expectedOnSince = referenceClock;
+    }
+    if (engine) engine.buttonPressed = hold;
+    $('holdBtn').classList.toggle('holding', hold);
+    $('holdBtn').textContent = hold ? 'Soltar botón (LOW)' : 'Mantener presionado';
+    $('buttonState').textContent = hold
+      ? 'Estado en Pin D2: presionado (LOW · 0V conectado a GND)'
+      : 'Estado en Pin D2: suelto (HIGH · 5V pull-up)';
+    syncBoardSwitchVisuals();
+    paint();
+  }
+
+  function pulse() {
+    clearTimeout(pulseTimer);
+    lockedHold = false;
+    if (hold) setButton(false);
+    setButton(true);
+    pulseTimer = setTimeout(() => setButton(false), LESSONS[lessonIndex].id === 5 || LESSONS[lessonIndex].id === 6 ? 360 : 160);
+  }
+
+  function compare(dt) {
+    const sp = LESSONS[lessonIndex][stage].expected, kind = sp.kind;
+    const needBtn = /^(hold|latch)/.test(kind);
+    const ex = expectedMask(), us = engine.mask();
+
+    if (engine.note && engine.note !== noteShown) {
+      noteShown = engine.note;
+      showMessage('⚠ ' + engine.note, 'error');
+    }
+    if (needBtn && hold) seenBtn = true;
+    if (ex === us) {
+      okMs += dt;
+      badMs = 0;
+    } else {
+      badMs += dt;
+      if (badMs > 220 && kind !== 'latchPattern') okMs = 0;
+    }
+
+    const cyc = sp.durations ? sp.durations.reduce((a, b) => a + b, 0) : (sp.sequence ? sp.sequence.length * sp.duration : 0);
+    const need = needBtn ? (seenBtn ? Math.max(2000, cyc + 500) : Infinity) : Math.max(3000, cyc + 1000);
+    let v;
+    if (badMs > 220 && kind !== 'latchPattern') {
+      v = ['diff', 'Todavía no coincide: la referencia muestra «' + describe(ex) + '» y tu circuito «' + describe(us) + '». Revisa pines y tiempos.'];
+    } else if (okMs >= need) {
+      v = ['ok', stage === 'a' ? '✓ Tu circuito coincide con la referencia. Pasa a la etapa B.' : '✓ Coincide con la referencia. ¡Ejercicio resuelto!'];
+      markDone();
+    } else {
+      v = ['', needBtn && !seenBtn ? 'Pulsa el botón físico SW1 en la placa para comparar ambos circuitos.' : 'Comparando en tiempo real con la referencia…'];
+    }
+
+    const key = v[0] + v[1];
+    if (key !== verdictShown) {
+      verdictShown = key;
+      const el = $('verdict');
+      el.className = 'verdict ' + v[0];
+      el.textContent = v[1];
+    }
+  }
+
+  function markDone() {
+    const k = lessonIndex + '-' + stage;
+    if (doneSet.has(k)) return;
+    doneSet.add(k);
+    try { localStorage.setItem('arduino-lab-v2-done', JSON.stringify([...doneSet])); } catch {}
+    renderDone();
+  }
+
+  function renderDone() {
+    document.querySelectorAll('.nav-item').forEach(b => {
+      const i = Number(b.dataset.level);
+      b.classList.toggle('done', STAGES.every(x => doneSet.has(i + '-' + x)));
+    });
+    document.querySelectorAll('.path-tab').forEach(t => {
+      t.classList.toggle('done', doneSet.has(lessonIndex + '-' + t.dataset.stage));
+    });
+  }
+
+  function paint() {
+    if (!engine && verdictShown !== '-') {
+      verdictShown = '-';
+      const el = $('verdict');
+      el.className = 'verdict';
+      el.textContent = 'Ejecuta tu código para compararlo con la referencia.';
+    }
+    const ref = expectedMask();
+    renderLeds('expectedBoard', ref);
+    $('expectedState').textContent = describe(ref);
+    $('refTime').textContent = formatTime(referenceClock);
+
+    const result = engine ? engine.mask() : 0;
+    renderLeds('userBoard', result);
+    $('userState').textContent = engine ? describe(result) : 'Sin ejecutar';
+    $('simTime').textContent = engine ? formatTime(engine.now) : '00:00';
+  }
+
+  function tick(t) {
+    const dt = Math.max(0, Math.min(t - lastFrame, 100));
+    lastFrame = t;
+    if (!(engine && paused)) referenceClock += dt;
+    if (engine && !paused) {
+      try {
+        engine.advance(dt);
+        compare(dt);
+      } catch (err) {
+        engine = null;
+        setBadgeState('ERROR DE EJECUCIÓN', 'error');
+        showMessage('✕ ' + formatArduinoError(err, $('codeEditor').value), 'error');
+      }
+    }
+    if (t - lastPaint > 38) {
+      paint();
+      lastPaint = t;
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function goRelative(delta) {
+    const index = lessonIndex * 3 + STAGES.indexOf(stage) + delta;
+    if (index >= 0 && index < 18) {
+      loadLesson(Math.floor(index / 3), STAGES[index % 3]);
+    }
+  }
+
+  function downloadSketch() {
+    const blob = new Blob([$('codeEditor').value], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `arduino_nivel_${lessonIndex + 1}_${stage}.ino`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  function buildPrintableWorksheets() {
+    const container = $('printableWorksheets');
+    container.innerHTML = LESSONS.map(l => `
+      <div class="print-sheet">
+        <h2>NIVEL 0${l.id} · ${l.title} (${l.subtitle})</h2>
+        <p><strong>Conceptos clave:</strong> ${l.concept}</p>
+        <p><strong>A. Observa (${l.a.title}):</strong> ${l.a.instruction}</p>
+        <pre>${escapeHtml(l.a.code)}</pre>
+        <p><strong>Pregunta A:</strong> ${l.a.question}</p>
+        <div class="print-lines"></div>
+        <p style="margin-top:10px;"><strong>B. Completa (${l.b.title}):</strong> ${l.b.instruction}</p>
+        <pre>${escapeHtml(l.b.code)}</pre>
+        <p><strong>Pregunta B:</strong> ${l.b.question}</p>
+        <div class="print-lines"></div>
+        <p style="margin-top:10px;"><strong>C. Crea (${l.c.title}):</strong> ${l.c.instruction}</p>
+        <p><strong>Pregunta C:</strong> ${l.c.question}</p>
+        <div class="print-lines"></div>
+        <div class="print-lines"></div>
+      </div>
+    `).join('');
+  }
+
+  const SNIPPETS = {
+    whileSweep: `void setup() {
+  Serial.begin(9600);
+  int p = 8;
+  while (p <= 12) {
+    pinMode(p, OUTPUT);
+    p += 1;
+  }
+}
+
+void loop() {
+  int pin = 8;
+  while (pin <= 12) {
+    Serial.print("Encendiendo pin D");
+    Serial.println(pin);
+    digitalWrite(pin, HIGH);
+    delay(250);
+    digitalWrite(pin, LOW);
+    pin += 1;
+  }
+}`,
+    whileWait: `const int led = 8;
+const int boton = 2;
+int contador = 0;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(led, OUTPUT);
+  pinMode(boton, INPUT_PULLUP);
+  Serial.println("Sistema listo. Pulsa el boton fisico SW1...");
+}
+
+void loop() {
+  // Espera mientras el boton este suelto (HIGH)
+  while (digitalRead(boton) == HIGH) {
+    digitalWrite(led, LOW);
+  }
+  contador += 1;
+  Serial.print("Pulsacion detectada #");
+  Serial.println(contador);
+  digitalWrite(led, HIGH);
+  delay(300);
+}`
+  };
+
+  function init() {
+    document.querySelectorAll('.path-tab').forEach(el => {
+      el.addEventListener('click', () => loadLesson(lessonIndex, el.dataset.stage));
+    });
+
+    $('runBtn').addEventListener('click', runCode);
+    $('stopBtn').addEventListener('click', togglePause);
+    $('pulseBtn').addEventListener('click', pulse);
+    $('holdBtn').addEventListener('click', () => {
+      clearTimeout(pulseTimer);
+      lockedHold = !hold;
+      setButton(!hold);
+    });
+    $('clearSerialBtn').addEventListener('click', clearSerial);
+
+    $('resetBtn').addEventListener('click', () => {
+      try { localStorage.removeItem(storeKey(lessonIndex + 1, stage)); } catch {}
+      $('codeEditor').value = LESSONS[lessonIndex][stage].code;
+      editorLines();
+      runCode();
+    });
+
+    $('prevBtn').addEventListener('click', () => goRelative(-1));
+    $('nextBtn').addEventListener('click', () => goRelative(1));
+
+    $('copyBtn').addEventListener('click', () => {
+      const area = $('codeEditor');
+      area.select();
+      document.execCommand('copy');
+      showMessage('✓ Código copiado al portapapeles.', 'ok');
+    });
+
+    $('downloadBtn').addEventListener('click', downloadSketch);
+
+    // Modal de ejemplos while / Serial / +=
+    const openModal = () => { $('featuresModal').hidden = false; };
+    const closeModal = () => { $('featuresModal').hidden = true; };
+    $('openNewFeaturesBtn').addEventListener('click', openModal);
+    $('insertSerialBtn').addEventListener('click', openModal);
+    $('closeModalBtn').addEventListener('click', closeModal);
+    $('featuresModal').addEventListener('click', e => {
+      if (e.target === $('featuresModal')) closeModal();
+    });
+
+    document.querySelectorAll('.load-snippet-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.snippet;
+        if (key === 'whileSweep' && lessonIndex !== 5) {
+          loadLesson(5, 'a');
+        } else if (key === 'whileWait' && lessonIndex < 2) {
+          loadLesson(2, 'a');
+        }
+        $('codeEditor').value = SNIPPETS[key];
+        editorLines();
+        closeModal();
+        runCode();
+      });
+    });
+
+    // Impresión de fichas A4
+    buildPrintableWorksheets();
+    const triggerPrint = () => window.print();
+    $('printSheetsBtn').addEventListener('click', triggerPrint);
+    $('topPrintBtn').addEventListener('click', triggerPrint);
+
+    const area = $('codeEditor');
+    area.addEventListener('input', () => {
+      codeDirty = true;
+      errLine = 0;
+      saveCurrent();
+      editorLines();
+      setBadgeState(engine ? 'CAMBIOS SIN EJECUTAR' : 'SIN EJECUTAR');
+    });
+    area.addEventListener('scroll', syncEditorScroll);
+
+    let escOut = false;
+    const ins = t => {
+      const p = area.selectionStart;
+      area.setRangeText(t, p, area.selectionEnd, 'end');
+      area.dispatchEvent(new Event('input'));
+    };
+
+    area.addEventListener('blur', () => { escOut = false; });
+    area.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { escOut = true; return; }
+      if (e.key === 'Tab' && !e.shiftKey && !escOut) {
+        e.preventDefault();
+        ins('  ');
+      } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        runCode();
+      } else if (e.key === 'Enter' && !e.shiftKey && !e.altKey) {
+        const v = area.value, p = area.selectionStart;
+        const ls = v.lastIndexOf('\n', p - 1) + 1;
+        const pre = v.slice(ls, p);
+        const ind = pre.match(/^[ \t]*/)[0];
+        const more = /\{\s*$/.test(pre) ? '  ' : '';
+        e.preventDefault();
+        ins('\n' + ind + more);
+      }
+      if (e.key !== 'Tab') escOut = false;
+    });
+
+    try {
+      JSON.parse(localStorage.getItem('arduino-lab-v2-done') || '[]').forEach(k => doneSet.add(k));
+    } catch {}
+
+    loadLesson(0, 'a');
+    requestAnimationFrame(tick);
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+</body>
+</html>
